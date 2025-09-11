@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "RemoveBG.AI",
+  title: "Background Remover",
   description: "Retirez le fond d'une image en 1 clic avec notre IA",
 };
 
@@ -20,6 +20,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={inter.variable}>
+      <head>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-2PF2Z2Z0NS"
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-2PF2Z2Z0NS');
+            `,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased">
         {children}
         <Analytics />
