@@ -1,22 +1,22 @@
 # Background Remover
 
-Une application web complète pour retirer le fond d'une image en 1 clic avec l'intelligence artificielle.
+A complete web application to remove image backgrounds in 1 click using artificial intelligence.
 
 ## Architecture
 
-- **Frontend**: Next.js avec TypeScript et Tailwind CSS
-- **Backend**: Python avec FastAPI et rembg
-- **Déploiement**: Azure Container Apps
-- **Analytics**: Google Analytics et Vercel Analytics
+- **Frontend**: Next.js with TypeScript and Tailwind CSS
+- **Backend**: Python with FastAPI and rembg
+- **Deployment**: Azure Container Apps
+- **Analytics**: Google Analytics and Vercel Analytics
 
 ## Features
 
 - **Background Removal**: Upload an image and get it back with the background removed
-- **Modern UI**: Interface utilisateur intuitive avec Next.js
+- **Modern UI**: Intuitive user interface with Next.js
 - **FastAPI**: Modern, fast web framework for building APIs
 - **Docker Support**: Ready for containerization and deployment
 - **Azure Container Apps**: Deployment scripts included
-- **Analytics Integration**: Google Analytics et Vercel Analytics intégrées
+- **Analytics Integration**: Google Analytics and Vercel Analytics integrated
 
 ## API Endpoints
 
@@ -139,17 +139,17 @@ chmod +x back/update.sh
 
 ```
 background-remover/
-├── front/                      # Application Next.js
-│   ├── app/                   # Pages et composants Next.js
-│   ├── components/            # Composants React réutilisables
-│   ├── lib/                   # Utilitaires et configuration
-│   └── package.json           # Dépendances frontend
-├── back/                      # API Python FastAPI
-│   ├── main.py                # Application FastAPI
-│   ├── requirements.txt       # Dépendances Python
-│   ├── Dockerfile             # Configuration Docker
-│   ├── deploy.sh              # Script de déploiement
-│   └── update.sh              # Script de mise à jour
+├── front/                      # Next.js Application
+│   ├── app/                   # Next.js pages and components
+│   ├── components/            # Reusable React components
+│   ├── lib/                   # Utilities and configuration
+│   └── package.json           # Frontend dependencies
+├── back/                      # Python FastAPI API
+│   ├── main.py                # FastAPI application
+│   ├── requirements.txt       # Python dependencies
+│   ├── Dockerfile             # Docker configuration
+│   ├── deploy.sh              # Deployment script
+│   └── update.sh              # Update script
 ├── .gitignore
 └── README.md
 ```
@@ -173,13 +173,13 @@ curl -X POST "http://localhost:8000/remove-bg" \
 - **Next.js 14**: React framework with App Router
 - **TypeScript**: Type safety
 - **Tailwind CSS**: Utility-first CSS framework
-- **Vercel Analytics**: Analytics intégrées
+- **Vercel Analytics**: Integrated analytics
 
 ### Backend
 
 - **FastAPI**: Web framework
 - **rembg**: Background removal library
-- **Python**: Language de programmation
+- **Python**: Programming language
 
 ### Deployment & Infrastructure
 
@@ -189,35 +189,35 @@ curl -X POST "http://localhost:8000/remove-bg" \
 
 ### Analytics
 
-- **Google Analytics**: Tracking des utilisateurs
+- **Google Analytics**: User tracking
 - **Vercel Analytics**: Performance monitoring
 
-## Roadmap - Fonctionnalités à venir
+## Roadmap - Upcoming Features
 
-### 🔐 Authentification
+### 🔐 Authentication
 
-- [ ] Système d'authentification utilisateur
-- [ ] Gestion des comptes et profils
-- [ ] Connexion via OAuth (Google, GitHub)
+- [ ] User authentication system
+- [ ] Account and profile management
+- [ ] OAuth login (Google, GitHub)
 
-### 💾 Stockage des images
+### 💾 Image Storage
 
-- [ ] Upload des images sur Azure Blob Storage
-- [ ] Sauvegarde automatique des images traitées
-- [ ] Gestion des métadonnées des fichiers
+- [ ] Upload images to Azure Blob Storage
+- [ ] Automatic backup of processed images
+- [ ] File metadata management
 
-### 📊 Gestion des utilisateurs
+### 📊 User Management
 
-- [ ] Limite de traitement par utilisateur => renvoyer vers un formulaire contact pour plus de fonctionnalités.
-- [ ] Système de quotas (ex: 10 images/jour pour les utilisateurs gratuits)
-- [ ] Tracking de l'utilisation par utilisateur
+- [ ] Processing limits per user => redirect to contact form for more features
+- [ ] Quota system (e.g., 10 images/day for free users)
+- [ ] Usage tracking per user
 
-### 🖼️ Galerie personnelle
+### 🖼️ Personal Gallery
 
-- [ ] Interface pour visualiser les images générées
-- [ ] Historique des traitements effectués
-- [ ] Possibilité de télécharger à nouveau les images
-- [ ] Organisation par dossiers/tags
+- [ ] Interface to view generated images
+- [ ] Processing history
+- [ ] Ability to re-download images
+- [ ] Organization by folders/tags
 
 ## License
 
