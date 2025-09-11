@@ -2,7 +2,8 @@
 
 A complete web application to remove image backgrounds in 1 click using artificial intelligence.
 
-<img width="2088" height="1307" alt="image" src="https://github.com/user-attachments/assets/d47ee9e5-bc9c-40e5-97b8-b0beac2ad6ca" />
+<img width="2088" height="1307" alt="image" src="https://github.com/user-attachments/assets/c2b7e752-6f4b-41c7-b98d-a75a2702ef89" />
+
 
 
 ## Architecture
