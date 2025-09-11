@@ -1,0 +1,8 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Deployment scripts with sensitive values
+back/deploy.sh
+back/update.sh
