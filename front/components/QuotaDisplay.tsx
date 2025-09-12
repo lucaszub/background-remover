@@ -17,7 +17,7 @@ export const QuotaDisplay: React.FC<QuotaDisplayProps> = ({
   else if (percent >= 50) color = "bg-orange-400";
 
   return (
-    <div className="w-full mb-2">
+    <div className="w-full mb-4">
       <div className="flex items-center justify-between text-xs mb-1">
         <span>
           {isAuthenticated ? "Premium" : "Gratuit"}: {usage}/{limit} images
@@ -29,6 +29,18 @@ export const QuotaDisplay: React.FC<QuotaDisplayProps> = ({
           className={`absolute left-0 top-0 h-2 rounded ${color}`}
           style={{ width: `${percent}%` }}
         />
+      </div>
+      
+      <div className="mt-2">
+        {!isAuthenticated ? (
+          <p className="text-xs text-neutral-400">
+            Connectez-vous pour 20 images gratuites
+          </p>
+        ) : (
+          <p className="text-xs text-neutral-400">
+            Contactez-moi pour plus de fonctionnalités
+          </p>
+        )}
       </div>
     </div>
   );

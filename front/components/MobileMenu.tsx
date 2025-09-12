@@ -1,26 +1,25 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useSession, signIn, signOut } from 'next-auth/react'
-import Link from 'next/link'
+import { useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function MobileMenu() {
-  const [isOpen, setIsOpen] = useState(false)
-  const { data: session, status } = useSession()
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   const toggleMenu = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
 
   const handleSignIn = () => {
-    signIn('google', { callbackUrl: '/' })
-    setIsOpen(false)
-  }
+    signIn("google", { callbackUrl: "/" });
+    setIsOpen(false);
+  };
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/' })
-    setIsOpen(false)
-  }
+    signOut({ callbackUrl: "/" });
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -42,7 +41,7 @@ export default function MobileMenu() {
         />
         <span
           className={`w-6 h-0.5 bg-neutral-400 transition-all duration-300 ${
-            isOpen ? '-rotate-45 -translate-y-2' : ''
+            isOpen ? "-rotate-45 -translate-y-2" : ""
           }`}
         />
       </button>
@@ -50,7 +49,7 @@ export default function MobileMenu() {
       {/* Mobile Menu Overlay */}
       <div
         className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={toggleMenu}
       />
@@ -58,7 +57,7 @@ export default function MobileMenu() {
       {/* Mobile Menu Panel */}
       <div
         className={`md:hidden fixed top-0 right-0 h-full w-64 bg-neutral-900 border-l border-neutral-800 z-50 transform transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <nav className="flex flex-col pt-20 px-6 space-y-6">
@@ -84,19 +83,25 @@ export default function MobileMenu() {
             Contact
           </a>
           <div className="border-t border-neutral-800 pt-6 mt-6">
-            {status === 'loading' ? (
+            {status === "loading" ? (
               <div className="flex items-center justify-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
               </div>
             ) : session ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3 py-2">
-                  {session.user?.image && (
+                  {session.user?.image ? (
                     <img
                       src={session.user.image}
                       alt="Avatar"
-                      className="w-8 h-8 rounded-full"
+                      className="w-10 h-10 rounded-full border border-neutral-600"
                     />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-neutral-600 flex items-center justify-center">
+                      <span className="text-neutral-200 font-medium">
+                        {session.user?.name?.charAt(0) || "U"}
+                      </span>
+                    </div>
                   )}
                   <div>
                     <p className="text-neutral-200 font-medium text-sm">
@@ -111,23 +116,16 @@ export default function MobileMenu() {
                   onClick={handleSignOut}
                   className="w-full text-left text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
                 >
-                  Se déconnecter
+                  Déconnexion
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
-                <Link
-                  href="/auth/signin"
-                  className="text-neutral-200 hover:text-white transition-colors text-base font-medium py-2 block"
-                  onClick={toggleMenu}
-                >
-                  Connexion
-                </Link>
                 <button
                   onClick={handleSignIn}
-                  className="bg-white text-neutral-900 hover:bg-neutral-200 transition-colors text-base font-medium py-2 px-4 rounded-lg w-full"
+                  className="bg-white text-neutral-900 hover:bg-neutral-200 transition-colors text-base font-medium py-3 px-4 rounded-lg w-full"
                 >
-                  S&apos;inscrire avec Google
+                  Login
                 </button>
               </div>
             )}
@@ -135,5 +133,5 @@ export default function MobileMenu() {
         </nav>
       </div>
     </>
-  )
+  );
 }

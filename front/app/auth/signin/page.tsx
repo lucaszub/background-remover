@@ -1,34 +1,34 @@
-'use client'
+"use client";
 
-import { signIn, getProviders } from 'next-auth/react'
-import { useState, useEffect } from 'react'
+import { signIn, getProviders } from "next-auth/react";
+import { useState, useEffect } from "react";
 
 interface Provider {
-  id: string
-  name: string
-  type: string
-  signinUrl: string
-  callbackUrl: string
+  id: string;
+  name: string;
+  type: string;
+  signinUrl: string;
+  callbackUrl: string;
 }
 
 interface Providers {
-  [key: string]: Provider
+  [key: string]: Provider;
 }
 
 export default function SignIn() {
-  const [providers, setProviders] = useState<Providers | null>(null)
+  const [providers, setProviders] = useState<Providers | null>(null);
 
   useEffect(() => {
     const fetchProviders = async () => {
-      const res = await getProviders()
-      setProviders(res)
-    }
-    fetchProviders()
-  }, [])
+      const res = await getProviders();
+      setProviders(res);
+    };
+    fetchProviders();
+  }, []);
 
   const handleSignIn = (providerId: string) => {
-    signIn(providerId, { callbackUrl: '/' })
-  }
+    signIn(providerId, { callbackUrl: "/" });
+  };
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50 flex items-center justify-center px-4">
@@ -42,9 +42,7 @@ export default function SignIn() {
               Background Remover
             </span>
           </div>
-          <h2 className="text-3xl font-bold text-center mb-2">
-            Se connecter
-          </h2>
+          <h2 className="text-3xl font-bold text-center mb-2">Se connecter</h2>
           <p className="text-neutral-400 text-center">
             Connectez-vous pour accéder à toutes les fonctionnalités
           </p>
@@ -58,7 +56,7 @@ export default function SignIn() {
                 onClick={() => handleSignIn(provider.id)}
                 className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-neutral-700 rounded-lg hover:border-neutral-600 hover:bg-neutral-900 transition-all duration-200 group"
               >
-                {provider.name === 'Google' && (
+                {provider.name === "Google" && (
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -78,7 +76,7 @@ export default function SignIn() {
                     />
                   </svg>
                 )}
-                <span className="text-neutral-200 font-medium">
+                <span className="text-neutral-200 cursor-pointer font-medium">
                   Continuer avec {provider.name}
                 </span>
               </button>
@@ -87,11 +85,11 @@ export default function SignIn() {
 
         <div className="text-center pt-4">
           <p className="text-sm text-neutral-500">
-            En vous connectant, vous acceptez nos{' '}
+            En vous connectant, vous acceptez nos{" "}
             <a href="#" className="text-neutral-300 hover:text-white underline">
               conditions d&apos;utilisation
-            </a>{' '}
-            et notre{' '}
+            </a>{" "}
+            et notre{" "}
             <a href="#" className="text-neutral-300 hover:text-white underline">
               politique de confidentialité
             </a>
@@ -100,5 +98,5 @@ export default function SignIn() {
         </div>
       </div>
     </div>
-  )
+  );
 }
