@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import AuthProvider from "../components/AuthProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -37,8 +38,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        {children}
-        <Analytics />
+        <AuthProvider>
+          {children}
+          <Analytics />
+        </AuthProvider>
       </body>
     </html>
   );
