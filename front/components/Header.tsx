@@ -1,5 +1,5 @@
-import MobileMenu from './MobileMenu'
-import DesktopAuth from './DesktopAuth'
+import MobileMenu from "./MobileMenu";
+import DesktopAuth from "./DesktopAuth";
 
 export default function Header() {
   return (
@@ -14,10 +14,10 @@ export default function Header() {
               BR
             </span>
             <span className="text-neutral-400 font-medium text-base tracking-tight select-none">
-              Background Remover
+              Background-Remover
             </span>
           </div>
-          
+
           {/* Desktop Navigation & Auth */}
           <div className="hidden md:flex items-center gap-8">
             <nav
