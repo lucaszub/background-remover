@@ -31,7 +31,7 @@ export default function ImagePreview({
             />
           ) : (
             <img
-              src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&w=400&q=80"
+              src="/car-2.jpg"
               alt="Image exemple"
               className="object-cover w-full h-full transition-all duration-500 blur-0"
             />
@@ -56,7 +56,7 @@ export default function ImagePreview({
             />
           ) : (
             <img
-              src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&w=400&q=80"
+              src="/image-sans-fond.png"
               alt="Image exemple"
               className="object-cover w-full h-full transition-all duration-500 blur-sm opacity-80"
               style={{background: 'repeating-conic-gradient(#2c2c33 0% 25%, transparent 0% 50%) 50% / 20px 20px'}}
