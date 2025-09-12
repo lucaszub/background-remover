@@ -37,4 +37,11 @@ Rendre les sessions NextAuth disponibles dans toute l'app.
 - `app/layout.tsx` modifié pour wrapper l'application
 - Sessions NextAuth disponibles dans toute l'app
 - Hooks useSession, signIn, signOut fonctionnels
+
+### 🔄 Nouvelle architecture MVP
+SessionProvider critique pour:
+- Déterminer status auth dans API routes Next.js
+- Clé quota: session?.user?.email || req.ip
+- Limites: session ? 20 : 5
+- Plus de communication directe avec FastAPI côté client
 ```

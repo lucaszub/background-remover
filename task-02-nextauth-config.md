@@ -30,7 +30,10 @@ GOOGLE_CLIENT_ID=ton_client_id_ici
 GOOGLE_CLIENT_SECRET=ton_secret_ici
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=genere_string_aleatoire_32_chars
-NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Nouvelle architecture - FastAPI pour ML seulement
+FASTAPI_URL=http://localhost:8000
+FASTAPI_SECRET_KEY=your-secret-api-key-here
 ```
 
 ## Test de validation
@@ -46,3 +49,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 - Configuration Google Provider avec callbacks JWT
 - Variables d'environnement dans `.env.local`
 - Pages signin/error créées
+
+### 🔄 Nouvelle architecture MVP
+NextAuth.js reste inchangé mais sera utilisé pour:
+- Distinction quotas: 5 (non-connecté) vs 20 (connecté)  
+- Clés quotas: IP vs email utilisateur
+- Plus besoin de token JWT côté FastAPI
