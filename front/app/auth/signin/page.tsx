@@ -89,7 +89,7 @@ export default function SignIn() {
           <p className="text-sm text-neutral-500">
             En vous connectant, vous acceptez nos{' '}
             <a href="#" className="text-neutral-300 hover:text-white underline">
-              conditions d'utilisation
+              conditions d&apos;utilisation
             </a>{' '}
             et notre{' '}
             <a href="#" className="text-neutral-300 hover:text-white underline">

@@ -59,7 +59,7 @@ export default function DesktopAuth() {
         onClick={handleSignIn}
         className="bg-white text-neutral-900 hover:bg-neutral-200 transition-colors text-sm font-medium px-4 py-2 rounded-lg"
       >
-        S'inscrire
+  S&apos;inscrire
       </button>
     </div>
   )

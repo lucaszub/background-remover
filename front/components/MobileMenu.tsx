@@ -32,12 +32,12 @@ export default function MobileMenu() {
       >
         <span
           className={`w-6 h-0.5 bg-neutral-400 transition-all duration-300 ${
-            isOpen ? 'rotate-45 translate-y-2' : ''
+            isOpen ? "rotate-45 translate-y-2" : ""
           }`}
         />
         <span
           className={`w-6 h-0.5 bg-neutral-400 transition-all duration-300 ${
-            isOpen ? 'opacity-0' : ''
+            isOpen ? "opacity-0" : ""
           }`}
         />
         <span
@@ -127,7 +127,7 @@ export default function MobileMenu() {
                   onClick={handleSignIn}
                   className="bg-white text-neutral-900 hover:bg-neutral-200 transition-colors text-base font-medium py-2 px-4 rounded-lg w-full"
                 >
-                  S'inscrire avec Google
+                  S&apos;inscrire avec Google
                 </button>
               </div>
             )}
