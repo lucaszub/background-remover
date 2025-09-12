@@ -1,3 +1,6 @@
+import MobileMenu from './MobileMenu'
+import DesktopAuth from './DesktopAuth'
+
 export default function Header() {
   return (
     <>
@@ -14,29 +17,37 @@ export default function Header() {
               Background Remover
             </span>
           </div>
-          <nav
-            className="flex items-center gap-8 animate-fade-in-down"
-            style={{ animationDelay: "0.1s", animationDuration: "800ms" }}
-          >
-            <a
-              href="#"
-              className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
+          
+          {/* Desktop Navigation & Auth */}
+          <div className="hidden md:flex items-center gap-8">
+            <nav
+              className="flex items-center gap-8 animate-fade-in-down"
+              style={{ animationDelay: "0.1s", animationDuration: "800ms" }}
             >
-              Docs
-            </a>
-            <a
-              href="#"
-              className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
-            >
-              API
-            </a>
-            <a
-              href="#"
-              className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
-            >
-              Contact
-            </a>
-          </nav>
+              <a
+                href="#"
+                className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
+              >
+                Docs
+              </a>
+              <a
+                href="#"
+                className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
+              >
+                API
+              </a>
+              <a
+                href="#"
+                className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
+              >
+                Contact
+              </a>
+            </nav>
+            <DesktopAuth />
+          </div>
+
+          {/* Mobile Menu */}
+          <MobileMenu />
         </div>
       </header>
       <div className="border-b border-neutral-800 w-full mb-2"></div>
