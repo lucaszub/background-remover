@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     
     // Préparer la requête vers FastAPI
     const fastApiFormData = new FormData()
-    fastApiFormData.append('file', file)
+    fastApiFormData.append('file', file, file.name)
     
     const fastApiUrl = process.env.FASTAPI_URL
     const fastApiKey = process.env.FASTAPI_SECRET_KEY
@@ -78,8 +78,17 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Debug logs
+    console.log('FastAPI URL:', fastApiUrl)
+    console.log('File details:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    })
+
     // Appeler FastAPI pour le traitement ML
-    const response = await fetch(`${fastApiUrl}/process-image`, {
+    const cleanUrl = fastApiUrl.endsWith('/') ? fastApiUrl.slice(0, -1) : fastApiUrl
+    const response = await fetch(`${cleanUrl}/process-image`, {
       method: 'POST',
       headers: {
         'x-api-key': fastApiKey
@@ -88,7 +97,17 @@ export async function POST(request: NextRequest) {
     })
     
     if (!response.ok) {
-      console.error(`FastAPI error: ${response.status}`)
+      const errorText = await response.text()
+      console.error(`FastAPI error: ${response.status}`, errorText)
+
+      // Essayer de parser l'erreur JSON pour plus de détails
+      try {
+        const errorData = JSON.parse(errorText)
+        console.error('FastAPI error details:', errorData)
+      } catch {
+        console.error('FastAPI raw error:', errorText)
+      }
+
       return NextResponse.json(
         { error: 'Image processing failed' },
         { status: 500 }
