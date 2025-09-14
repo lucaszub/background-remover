@@ -1,10 +1,50 @@
+# Python
 venv/
 .venv/
 __pycache__/
 *.pyc
 
+# Node.js
+node_modules/
+.next/
+.env*.local
+
+# Database
+database/data/
+postgres_data/
+*.sql.backup
+
+# Docker
+.dockerignore
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # Deployment scripts with sensitive values
 back/deploy.sh
 back/update.sh
 back/.env
+back/update-vps.sh
+
+# Keep these files (comment to track)
+# docker-compose.db.yml
+# Dockerfile.postgres
+# database/init/
+# README-database.md
