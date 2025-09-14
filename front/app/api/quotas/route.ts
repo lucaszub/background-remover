@@ -1,55 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
-import { checkQuota, getQuotaKey, getQuotaMessage } from '@/lib/quotas'
+import { checkUserQuota, getUserStats, getClientIP } from '@/lib/quotas-db'
 
 export async function GET(request: NextRequest) {
   try {
     // Récupérer la session utilisateur
     const session = await getServerSession(authOptions)
-    
-    // Déterminer l'IP (avec gestion des proxies)
-    const forwarded = request.headers.get('x-forwarded-for')
-    const ip = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || 'unknown'
-    
-    // Générer la clé de quota
-    const quotaKey = getQuotaKey(session, ip)
-    
-    // Vérifier les quotas actuels
-    const quotaCheck = await checkQuota(quotaKey)
-    const isAuth = Boolean(session)
-    
-    // Calculer les informations supplémentaires
-    const remaining = quotaCheck.limit - quotaCheck.usage
-    const percentage = Math.round((quotaCheck.usage / quotaCheck.limit) * 100)
-    const message = getQuotaMessage(quotaCheck.usage, quotaCheck.limit, isAuth)
-    
-    // Déterminer le statut de couleur pour l'UI
-    let status: 'safe' | 'warning' | 'critical' = 'safe'
-    if (percentage >= 80) {
-      status = 'critical'
-    } else if (percentage >= 50) {
-      status = 'warning'
+
+    if (!session?.user?.id) {
+      // Pour les utilisateurs non connectés
+      return NextResponse.json({
+        usage: 0,
+        limit: 0,
+        remaining: 0,
+        canUse: false,
+        percentage: 0,
+        status: 'critical',
+        message: 'Please sign in to track your usage',
+        isAuthenticated: false,
+        quotaType: 'free',
+        resetTime: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
+      })
     }
-    
+
+    // Récupérer les quotas utilisateur
+    const quotaInfo = await checkUserQuota(session.user.id)
+    const stats = await getUserStats(session.user.id, 7) // 7 derniers jours
+
     return NextResponse.json({
-      usage: quotaCheck.usage,
-      limit: quotaCheck.limit,
-      remaining,
-      canUse: quotaCheck.canUse,
-      percentage,
-      status,
-      message,
-      isAuthenticated: isAuth,
-      userInfo: session?.user ? {
+      usage: quotaInfo.dailyUsage,
+      limit: quotaInfo.dailyLimit,
+      remaining: quotaInfo.dailyRemaining,
+      canUse: quotaInfo.canUse,
+      percentage: quotaInfo.percentage,
+      status: quotaInfo.status,
+      message: quotaInfo.message,
+      isAuthenticated: true,
+      planType: quotaInfo.planType.toLowerCase(),
+      resetTime: quotaInfo.resetTime,
+      monthlyUsage: quotaInfo.monthlyUsage,
+      monthlyLimit: quotaInfo.monthlyLimit,
+      userInfo: {
         name: session.user.name,
         email: session.user.email,
         image: session.user.image
-      } : null,
-      quotaType: isAuth ? 'premium' : 'free',
-      resetTime: new Date(new Date().setHours(24, 0, 0, 0)).toISOString() // Minuit suivant
+      },
+      quotaType: quotaInfo.planType.toLowerCase(),
+      stats
     })
-    
+
   } catch (error) {
     console.error('Quotas API error:', error)
     return NextResponse.json(

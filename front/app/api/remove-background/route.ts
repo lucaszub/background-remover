@@ -1,34 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
-import { checkQuota, incrementQuota, getQuotaKey, getQuotaMessage } from '@/lib/quotas'
+import { checkUserQuota, incrementUserQuota, getClientIP } from '@/lib/quotas-db'
 
 export async function POST(request: NextRequest) {
   try {
     // Récupérer la session utilisateur
     const session = await getServerSession(authOptions)
-    
-    // Déterminer l'IP (avec gestion des proxies)
-    const forwarded = request.headers.get('x-forwarded-for')
-    const ip = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || 'unknown'
-    
-    // Générer la clé de quota
-    const quotaKey = getQuotaKey(session, ip)
-    
-    // Vérifier les quotas
-    const quotaCheck = await checkQuota(quotaKey)
-    
-    if (!quotaCheck.canUse) {
-      const isAuth = Boolean(session)
-      const message = getQuotaMessage(quotaCheck.usage, quotaCheck.limit, isAuth)
-      
+
+    // Vérifier que l'utilisateur est connecté
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { 
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Vérifier les quotas DB
+    const quotaCheck = await checkUserQuota(session.user.id)
+
+    if (!quotaCheck.canUse) {
+      return NextResponse.json(
+        {
           error: 'Quota exceeded',
-          message,
-          usage: quotaCheck.usage,
-          limit: quotaCheck.limit,
-          isAuthenticated: isAuth
+          message: quotaCheck.message,
+          quotaInfo: {
+            usage: quotaCheck.dailyUsage,
+            limit: quotaCheck.dailyLimit,
+            remaining: quotaCheck.dailyRemaining,
+            resetTime: quotaCheck.resetTime,
+            planType: quotaCheck.planType
+          }
         },
         { status: 429 }
       )
@@ -78,6 +80,11 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Récupérer métadonnées pour tracking
+    const startTime = Date.now()
+    const ip = getClientIP(request)
+    const userAgent = request.headers.get('user-agent')
+
     // Debug logs
     console.log('FastAPI URL:', fastApiUrl)
     console.log('File details:', {
@@ -116,19 +123,27 @@ export async function POST(request: NextRequest) {
     
     // Récupérer l'image traitée
     const processedImageBuffer = await response.arrayBuffer()
-    
-    // Incrémenter les quotas après succès
-    await incrementQuota(quotaKey)
-    
+    const processingTime = Date.now() - startTime
+
+    // Incrémenter les quotas après succès avec métadonnées
+    await incrementUserQuota(session.user.id, {
+      ipAddress: ip,
+      userAgent,
+      fileSize: file.size,
+      fileType: file.type,
+      processingTimeMs: processingTime
+    })
+
     // Retourner l'image traitée
     return new NextResponse(processedImageBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'image/png',
         'Content-Disposition': 'attachment; filename="background-removed.png"',
-        'X-Quota-Usage': String(quotaCheck.usage + 1),
-        'X-Quota-Limit': String(quotaCheck.limit),
-        'X-Quota-Remaining': String(quotaCheck.limit - quotaCheck.usage - 1)
+        'X-Quota-Usage': String(quotaCheck.dailyUsage + 1),
+        'X-Quota-Limit': String(quotaCheck.dailyLimit),
+        'X-Quota-Remaining': String(quotaCheck.dailyRemaining - 1),
+        'X-Processing-Time': String(processingTime)
       }
     })
     

@@ -209,55 +209,141 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 import { prisma } from '@/lib/prisma'
 import { PlanType } from '@prisma/client'
 
-export async function checkUserQuota(userId: string) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+interface QuotaCheckResult {
+  canUse: boolean
+  dailyUsage: number
+  dailyLimit: number
+  dailyRemaining: number
+  monthlyUsage?: number
+  monthlyLimit?: number
+  planType: PlanType
+  resetTime: string
+}
+
+export async function checkUserQuota(userId: string): Promise<QuotaCheckResult> {
+  const now = new Date()
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
   let userQuota = await prisma.userQuota.findUnique({
     where: { userId }
   })
 
+  // Créer quota si n'existe pas
   if (!userQuota) {
     userQuota = await prisma.userQuota.create({
       data: {
         userId,
-        quotaLimit: 10,
-        usedCount: 0,
-        resetAt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Demain
+        dailyLimit: 10,
+        dailyUsed: 0,
+        lastReset: startOfDay,
+        monthlyLimit: null, // Pas de limite mensuelle pour FREE
+        monthlyUsed: 0,
+        monthReset: startOfMonth,
         planType: PlanType.FREE
       }
     })
   }
 
-  // Réinitialiser si nécessaire
-  if (userQuota.resetAt <= new Date()) {
+  // Réinitialiser quotas si nécessaire
+  let needsUpdate = false
+  const updates: any = {}
+
+  if (userQuota.lastReset < startOfDay) {
+    updates.dailyUsed = 0
+    updates.lastReset = startOfDay
+    needsUpdate = true
+  }
+
+  if (userQuota.monthReset < startOfMonth) {
+    updates.monthlyUsed = 0
+    updates.monthReset = startOfMonth
+    needsUpdate = true
+  }
+
+  if (needsUpdate) {
     userQuota = await prisma.userQuota.update({
       where: { userId },
-      data: {
-        usedCount: 0,
-        resetAt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
-      }
+      data: updates
     })
   }
 
+  // Calculer les quotas
+  const dailyCanUse = userQuota.dailyUsed < userQuota.dailyLimit
+  const monthlyCanUse = userQuota.monthlyLimit
+    ? userQuota.monthlyUsed < userQuota.monthlyLimit
+    : true
+
+  const nextReset = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
+
   return {
-    canUse: userQuota.usedCount < userQuota.quotaLimit,
-    usage: userQuota.usedCount,
-    limit: userQuota.quotaLimit,
-    remaining: userQuota.quotaLimit - userQuota.usedCount
+    canUse: dailyCanUse && monthlyCanUse && userQuota.isActive,
+    dailyUsage: userQuota.dailyUsed,
+    dailyLimit: userQuota.dailyLimit,
+    dailyRemaining: userQuota.dailyLimit - userQuota.dailyUsed,
+    monthlyUsage: userQuota.monthlyLimit ? userQuota.monthlyUsed : undefined,
+    monthlyLimit: userQuota.monthlyLimit || undefined,
+    planType: userQuota.planType,
+    resetTime: nextReset.toISOString()
   }
 }
 
-export async function incrementUserQuota(userId: string, ipAddress: string) {
+export async function incrementUserQuota(
+  userId: string,
+  metadata: {
+    ipAddress: string
+    userAgent?: string
+    fileSize?: number
+    fileType?: string
+    processingTimeMs?: number
+  }
+) {
   await prisma.$transaction([
+    // Incrémenter les compteurs
     prisma.userQuota.update({
       where: { userId },
-      data: { usedCount: { increment: 1 } }
+      data: {
+        dailyUsed: { increment: 1 },
+        monthlyUsed: { increment: 1 }
+      }
     }),
+    // Enregistrer l'utilisation
     prisma.quotaUsage.create({
-      data: { userId, ipAddress }
+      data: {
+        userId,
+        ipAddress: metadata.ipAddress,
+        userAgent: metadata.userAgent,
+        fileSize: metadata.fileSize,
+        fileType: metadata.fileType,
+        processingTimeMs: metadata.processingTimeMs
+      }
     })
   ])
+}
+
+// Fonctions utilitaires
+export async function getUserStats(userId: string, days: number = 30) {
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days)
+
+  const usage = await prisma.quotaUsage.findMany({
+    where: {
+      userId,
+      usedAt: { gte: startDate }
+    },
+    orderBy: { usedAt: 'desc' }
+  })
+
+  return {
+    totalUsage: usage.length,
+    averageFileSize: usage.reduce((acc, u) => acc + (u.fileSize || 0), 0) / usage.length,
+    averageProcessingTime: usage.reduce((acc, u) => acc + (u.processingTimeMs || 0), 0) / usage.length,
+    usageByDay: usage.reduce((acc, u) => {
+      const day = u.usedAt.toISOString().split('T')[0]
+      acc[day] = (acc[day] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+  }
 }
 ```
 
@@ -288,23 +374,99 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
 
-  // Vérifier les quotas DB au lieu de Redis
+  // Vérifier les quotas DB
   const quotaCheck = await checkUserQuota(session.user.id)
 
   if (!quotaCheck.canUse) {
     return NextResponse.json({
       error: 'Quota exceeded',
-      ...quotaCheck
+      message: `Daily limit reached (${quotaCheck.dailyUsage}/${quotaCheck.dailyLimit})`,
+      quotaInfo: quotaCheck
     }, { status: 429 })
   }
 
-  // ... traitement de l'image ...
-
-  // Incrémenter les quotas
+  // Récupérer métadonnées pour tracking
+  const startTime = Date.now()
+  const file = formData.get('image') as File
   const ip = getClientIP(request)
-  await incrementUserQuota(session.user.id, ip)
+  const userAgent = request.headers.get('user-agent')
 
+  // ... traitement de l'image FastAPI ...
+
+  const processingTime = Date.now() - startTime
+
+  // Incrémenter les quotas avec métadonnées
+  await incrementUserQuota(session.user.id, {
+    ipAddress: ip,
+    userAgent,
+    fileSize: file.size,
+    fileType: file.type,
+    processingTimeMs: processingTime
+  })
+
+  // L'image traitée sera stockée dans Azure Blob Storage (à venir)
   return response
+}
+```
+
+### Mise à jour /api/quotas/route.ts
+```typescript
+import { getServerSession } from 'next-auth'
+import { checkUserQuota, getUserStats } from '@/lib/quotas-db'
+
+export async function GET() {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user?.id) {
+    // Pour les utilisateurs non connectés, utiliser l'IP
+    const ip = getClientIP(request)
+    return NextResponse.json({
+      usage: 0,
+      limit: 0,
+      remaining: 0,
+      canUse: false,
+      message: 'Please sign in to track your usage',
+      isAuthenticated: false,
+      quotaType: 'free'
+    })
+  }
+
+  const quotaInfo = await checkUserQuota(session.user.id)
+  const stats = await getUserStats(session.user.id, 7) // 7 derniers jours
+
+  return NextResponse.json({
+    usage: quotaInfo.dailyUsage,
+    limit: quotaInfo.dailyLimit,
+    remaining: quotaInfo.dailyRemaining,
+    canUse: quotaInfo.canUse,
+    percentage: Math.round((quotaInfo.dailyUsage / quotaInfo.dailyLimit) * 100),
+    status: quotaInfo.dailyUsage >= quotaInfo.dailyLimit ? 'critical' :
+            quotaInfo.dailyUsage >= quotaInfo.dailyLimit * 0.8 ? 'warning' : 'safe',
+    message: getQuotaMessage(quotaInfo),
+    isAuthenticated: true,
+    planType: quotaInfo.planType.toLowerCase(),
+    resetTime: quotaInfo.resetTime,
+    monthlyUsage: quotaInfo.monthlyUsage,
+    monthlyLimit: quotaInfo.monthlyLimit,
+    userInfo: {
+      name: session.user.name,
+      email: session.user.email,
+      image: session.user.image
+    },
+    stats
+  })
+}
+
+function getQuotaMessage(quotaInfo: any): string {
+  if (!quotaInfo.canUse) {
+    return `Daily limit reached. Resets tomorrow.`
+  }
+
+  if (quotaInfo.dailyRemaining <= 2) {
+    return `Only ${quotaInfo.dailyRemaining} uses left today.`
+  }
+
+  return `${quotaInfo.dailyRemaining} uses remaining today.`
 }
 ```
 
