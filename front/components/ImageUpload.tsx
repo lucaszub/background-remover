@@ -21,7 +21,7 @@ export default function ImageUpload({
     try {
       await onSubmit(e);
       refresh(); // Met à jour le quota après upload
-    } catch (error) {
+    } catch {
       // ...gestion d'erreur éventuelle...
     }
   };

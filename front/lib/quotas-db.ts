@@ -42,7 +42,7 @@ export async function checkUserQuota(userId: string): Promise<QuotaCheckResult> 
 
   // Réinitialiser quotas si nécessaire
   let needsUpdate = false
-  const updates: any = {}
+  const updates: Partial<{ dailyUsed: number; lastReset: Date; monthlyUsed: number; monthReset: Date }> = {}
 
   if (userQuota.lastReset < startOfDay) {
     updates.dailyUsed = 0

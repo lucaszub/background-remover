@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
-import { checkUserQuota, getUserStats, getClientIP } from '@/lib/quotas-db'
+import { checkUserQuota, getUserStats } from '@/lib/quotas-db'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Récupérer la session utilisateur
     const session = await getServerSession(authOptions)
