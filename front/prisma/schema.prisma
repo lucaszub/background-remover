@@ -7,25 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ====================================================================
-// NEXTAUTH MODELS - Gestion d'authentification
-// ====================================================================
-
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -42,19 +37,17 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String       @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String       @unique
   emailVerified DateTime?
-  image         String?   // Avatar utilisateur (URL)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
+  image         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   accounts      Account[]
+  usageHistory  QuotaUsage[]
   sessions      Session[]
   quota         UserQuota?
-  usageHistory  QuotaUsage[]
 
   @@map("users")
 }
@@ -68,68 +61,42 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// ====================================================================
-// QUOTA MANAGEMENT MODELS - Gestion des quotas utilisateurs
-// ====================================================================
-
 model UserQuota {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-
-  // Quotas journaliers
-  dailyLimit  Int       @default(10)  // Limite par jour
-  dailyUsed   Int       @default(0)   // Utilisé aujourd'hui
-  lastReset   DateTime  @default(now()) // Dernière réinitialisation
-
-  // Quotas mensuels (pour les plans premium)
-  monthlyLimit Int?     // Limite mensuelle (null = illimité)
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  dailyLimit   Int      @default(10)
+  dailyUsed    Int      @default(0)
+  lastReset    DateTime @default(now())
+  monthlyLimit Int?
   monthlyUsed  Int      @default(0)
   monthReset   DateTime @default(now())
-
-  // Plan et statut
-  planType    PlanType  @default(FREE)
-  isActive    Boolean   @default(true)
-
-  // Métadonnées
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planType     PlanType @default(FREE)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_quotas")
 }
 
 model QuotaUsage {
-  id         String   @id @default(cuid())
-  userId     String
+  id               String   @id @default(cuid())
+  userId           String
+  ipAddress        String
+  userAgent        String?
+  fileSize         Int?
+  fileType         String?
+  processingTimeMs Int?
+  usedAt           DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Tracking de l'utilisation
-  ipAddress  String   // IP pour les utilisateurs non connectés
-  userAgent  String?  // Navigateur/app
-
-  // Métadonnées de l'image
-  fileSize   Int?     // Taille du fichier traité
-  fileType   String?  // Type MIME (image/jpeg, etc.)
-
-  // Temps de traitement
-  processingTimeMs Int? // Temps de traitement en ms
-
-  // Timestamps
-  usedAt     DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("quota_usage")
   @@index([userId, usedAt])
-  @@index([usedAt]) // Pour les statistiques globales
+  @@index([usedAt])
+  @@map("quota_usage")
 }
 
-// ====================================================================
-// ENUMS
-// ====================================================================
-
 enum PlanType {
-  FREE        // 10/jour
-  PREMIUM     // 100/jour + 1000/mois
-  ENTERPRISE  // Illimité (pour plus tard)
+  FREE
+  PREMIUM
+  ENTERPRISE
 }
