@@ -15,6 +15,57 @@ interface QuotaCheckResult {
   message: string
 }
 
+// Quota simple par IP (10 images/jour)
+export async function checkAnonymousQuota(ip: string): Promise<QuotaCheckResult> {
+  const now = new Date()
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
+
+  // Compter les usages de cette IP aujourd'hui
+  const anonymousUserId = `anonymous_${ip.replace(/[:.]/g, '_')}`
+
+  const dailyUsage = await prisma.quotaUsage.count({
+    where: {
+      OR: [
+        { ipAddress: ip },
+        { userId: anonymousUserId }
+      ],
+      usedAt: {
+        gte: startOfDay,
+        lt: endOfDay
+      }
+    }
+  })
+
+  const dailyLimit = 10
+  const dailyRemaining = Math.max(0, dailyLimit - dailyUsage)
+  const canUse = dailyUsage < dailyLimit
+  const percentage = Math.min(100, Math.round((dailyUsage / dailyLimit) * 100))
+
+  let status: 'safe' | 'warning' | 'critical' = 'safe'
+  let message = `${dailyRemaining} images restantes aujourd'hui`
+
+  if (percentage >= 80) {
+    status = 'critical'
+    message = canUse ? 'Dernières images disponibles' : 'Limite quotidienne atteinte'
+  } else if (percentage >= 50) {
+    status = 'warning'
+    message = `Plus que ${dailyRemaining} images aujourd'hui`
+  }
+
+  return {
+    canUse,
+    dailyUsage,
+    dailyLimit,
+    dailyRemaining,
+    planType: 'FREE' as PlanType,
+    resetTime: endOfDay.toISOString(),
+    percentage,
+    status,
+    message
+  }
+}
+
 export async function checkUserQuota(userId: string): Promise<QuotaCheckResult> {
   const now = new Date()
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -124,6 +175,42 @@ export async function incrementUserQuota(
       }
     })
   ])
+}
+
+// Enregistrer usage anonyme (par IP)
+export async function incrementAnonymousQuota(
+  ip: string,
+  metadata: {
+    userAgent?: string | null
+    fileSize?: number
+    fileType?: string
+    processingTimeMs?: number
+  }
+) {
+  const anonymousUserId = `anonymous_${ip.replace(/[:.]/g, '_')}`
+
+  // Créer ou récupérer l'utilisateur anonyme
+  await prisma.user.upsert({
+    where: { id: anonymousUserId },
+    create: {
+      id: anonymousUserId,
+      email: `anonymous_${ip.replace(/[:.]/g, '_')}@anonymous.local`,
+      name: `Anonymous ${ip}`
+    },
+    update: {}
+  })
+
+  // Enregistrer l'usage
+  await prisma.quotaUsage.create({
+    data: {
+      userId: anonymousUserId,
+      ipAddress: ip,
+      userAgent: metadata.userAgent,
+      fileSize: metadata.fileSize,
+      fileType: metadata.fileType,
+      processingTimeMs: metadata.processingTimeMs
+    }
+  })
 }
 
 // Fonctions utilitaires

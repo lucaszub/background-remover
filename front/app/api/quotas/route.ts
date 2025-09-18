@@ -1,26 +1,29 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
-import { checkUserQuota, getUserStats } from '@/lib/quotas-db'
+import { checkUserQuota, getUserStats, checkAnonymousQuota, getClientIP } from '@/lib/quotas-db'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // Récupérer la session utilisateur
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      // Pour les utilisateurs non connectés
+      // Pour les utilisateurs non connectés - quota par IP
+      const clientIP = getClientIP(request)
+      const quotaInfo = await checkAnonymousQuota(clientIP)
+
       return NextResponse.json({
-        usage: 0,
-        limit: 0,
-        remaining: 0,
-        canUse: false,
-        percentage: 0,
-        status: 'critical',
-        message: 'Please sign in to track your usage',
+        usage: quotaInfo.dailyUsage,
+        limit: quotaInfo.dailyLimit,
+        remaining: quotaInfo.dailyRemaining,
+        canUse: quotaInfo.canUse,
+        percentage: quotaInfo.percentage,
+        status: quotaInfo.status,
+        message: quotaInfo.message,
         isAuthenticated: false,
-        quotaType: 'free',
-        resetTime: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
+        quotaType: 'anonymous',
+        resetTime: quotaInfo.resetTime
       })
     }
 

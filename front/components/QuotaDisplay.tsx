@@ -11,7 +11,7 @@ export const QuotaDisplay: React.FC<QuotaDisplayProps> = ({
   limit,
   isAuthenticated,
 }) => {
-  const percent = Math.min(100, Math.round((usage / limit) * 100));
+  const percent = limit === 0 ? 0 : Math.min(100, Math.round((usage / limit) * 100));
   let color = "bg-green-400";
   if (percent >= 80) color = "bg-red-400";
   else if (percent >= 50) color = "bg-orange-400";
@@ -34,7 +34,7 @@ export const QuotaDisplay: React.FC<QuotaDisplayProps> = ({
       <div className="mt-2">
         {!isAuthenticated ? (
           <p className="text-xs text-neutral-400">
-            Connectez-vous pour 20 images gratuites
+            Connectez-vous pour 20 images gratuites par jour
           </p>
         ) : (
           <p className="text-xs text-neutral-400">

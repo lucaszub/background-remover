@@ -1,23 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
-import { checkUserQuota, incrementUserQuota, getClientIP } from '@/lib/quotas-db'
+import { checkUserQuota, incrementUserQuota, checkAnonymousQuota, incrementAnonymousQuota, getClientIP } from '@/lib/quotas-db'
 
 export async function POST(request: NextRequest) {
   try {
     // Récupérer la session utilisateur
     const session = await getServerSession(authOptions)
+    const clientIP = getClientIP(request)
 
-    // Vérifier que l'utilisateur est connecté
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+    let quotaCheck
+    let isAuthenticated = false
+
+    if (session?.user?.id) {
+      // Utilisateur connecté - quota normal
+      quotaCheck = await checkUserQuota(session.user.id)
+      isAuthenticated = true
+    } else {
+      // Utilisateur anonyme - quota par IP
+      quotaCheck = await checkAnonymousQuota(clientIP)
     }
-
-    // Vérifier les quotas DB
-    const quotaCheck = await checkUserQuota(session.user.id)
 
     if (!quotaCheck.canUse) {
       return NextResponse.json(
@@ -82,7 +84,6 @@ export async function POST(request: NextRequest) {
     
     // Récupérer métadonnées pour tracking
     const startTime = Date.now()
-    const ip = getClientIP(request)
     const userAgent = request.headers.get('user-agent')
 
     // Debug logs
@@ -126,13 +127,22 @@ export async function POST(request: NextRequest) {
     const processingTime = Date.now() - startTime
 
     // Incrémenter les quotas après succès avec métadonnées
-    await incrementUserQuota(session.user.id, {
-      ipAddress: ip,
-      userAgent,
-      fileSize: file.size,
-      fileType: file.type,
-      processingTimeMs: processingTime
-    })
+    if (isAuthenticated && session?.user?.id) {
+      await incrementUserQuota(session.user.id, {
+        ipAddress: clientIP,
+        userAgent,
+        fileSize: file.size,
+        fileType: file.type,
+        processingTimeMs: processingTime
+      })
+    } else {
+      await incrementAnonymousQuota(clientIP, {
+        userAgent,
+        fileSize: file.size,
+        fileType: file.type,
+        processingTimeMs: processingTime
+      })
+    }
 
     // Retourner l'image traitée
     return new NextResponse(processedImageBuffer, {
