@@ -1,4 +1,5 @@
 import { Download, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 interface ImagePreviewProps {
   originalPreview: string | null
@@ -8,33 +9,53 @@ interface ImagePreviewProps {
   onDownload: () => void
 }
 
-export default function ImagePreview({ 
-  originalPreview, 
-  resultPreview, 
-  isLoading, 
-  isProcessed, 
-  onDownload 
+export default function ImagePreview({
+  originalPreview,
+  resultPreview,
+  isLoading,
+  isProcessed,
+  onDownload
 }: ImagePreviewProps) {
   return (
-    <section 
-      className="flex flex-col md:flex-row gap-8 w-full justify-center animate-fade-in-up" 
+    <section
+      className="flex flex-col md:flex-row gap-8 w-full justify-center animate-fade-in-up"
       style={{animationDelay: '0.5s', animationDuration: '1000ms'}}
     >
       {/* Original Image */}
       <div className="flex flex-col items-center w-full md:w-1/2 gap-2">
-        <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-900 flex items-center justify-center w-full aspect-square min-h-[220px] max-h-72">
+        <div className={`relative rounded-xl overflow-hidden border bg-neutral-900 flex items-center justify-center w-full aspect-square min-h-[220px] max-h-72 transition-all duration-500 ${
+          isLoading ? 'border-neutral-600 opacity-60' : 'border-neutral-800'
+        }`}>
           {originalPreview ? (
-            <img
+            <Image
               src={originalPreview}
               alt="Image originale"
-              className="object-cover w-full h-full transition-all duration-500"
+              fill
+              className={`object-cover transition-all duration-500 ${
+                isLoading ? 'opacity-60' : ''
+              }`}
             />
           ) : (
-            <img
+            <Image
               src="/car-2.jpg"
               alt="Image exemple"
-              className="object-cover w-full h-full transition-all duration-500 blur-0"
+              fill
+              className={`object-cover transition-all duration-500 ${
+                isLoading ? 'opacity-60 blur-sm' : 'blur-0'
+              }`}
             />
+          )}
+
+          {/* Indicateur de traitement sur l'image originale */}
+          {isLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-950/30 backdrop-blur-[1px]">
+              <div className="text-neutral-300 text-sm font-medium mb-2">
+                Traitement en cours...
+              </div>
+              <div className="text-neutral-400 text-xs text-center px-4">
+                ↓ Regardez l&apos;image du bas ↓
+              </div>
+            </div>
           )}
         </div>
         <span className="text-neutral-400 text-xs mt-2">Image originale</span>
@@ -42,12 +63,15 @@ export default function ImagePreview({
 
       {/* Result Image */}
       <div className="flex flex-col items-center w-full md:w-1/2 gap-2">
-        <div className="relative rounded-xl overflow-hidden border border-blue-700 bg-neutral-900 flex items-center justify-center w-full aspect-square min-h-[220px] max-h-72">
+        <div className={`relative rounded-xl overflow-hidden border bg-neutral-900 flex items-center justify-center w-full aspect-square min-h-[220px] max-h-72 transition-all duration-500 ${
+          isLoading ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-lg shadow-blue-500/20' : 'border-blue-700'
+        }`}>
           {resultPreview ? (
-            <img
+            <Image
               src={resultPreview}
               alt="Image sans fond"
-              className={`object-cover w-full h-full transition-all duration-500 ${
+              fill
+              className={`object-cover transition-all duration-500 ${
                 !isProcessed && originalPreview ? 'blur-sm opacity-80' : ''
               }`}
               style={{
@@ -55,22 +79,33 @@ export default function ImagePreview({
               }}
             />
           ) : (
-            <img
+            <Image
               src="/image-sans-fond.png"
               alt="Image exemple"
-              className="object-cover w-full h-full transition-all duration-500 blur-sm opacity-80"
+              fill
+              className="object-cover transition-all duration-500 blur-sm opacity-80"
               style={{background: 'repeating-conic-gradient(#2c2c33 0% 25%, transparent 0% 50%) 50% / 20px 20px'}}
             />
           )}
 
-          {/* Loader */}
+          {/* Loader amélioré */}
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm z-10">
-              <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-950/85 backdrop-blur-sm z-10">
+              <Loader2 className="w-10 h-10 text-blue-400 animate-spin mb-3" />
+              <div className="text-blue-300 text-sm font-medium mb-1">
+                IA en action...
+              </div>
+              <div className="text-blue-400 text-xs text-center px-4">
+                Suppression du fond
+              </div>
             </div>
           )}
         </div>
-        <span className="text-neutral-400 text-xs mt-2">Fond retiré (IA)</span>
+        <span className={`text-xs mt-2 transition-colors duration-300 ${
+          isLoading ? 'text-blue-400 font-medium' : 'text-neutral-400'
+        }`}>
+          {isLoading ? 'Traitement en cours...' : 'Fond retiré (IA)'}
+        </span>
         <button
           onClick={onDownload}
           disabled={!isProcessed}

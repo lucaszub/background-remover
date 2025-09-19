@@ -1,4 +1,16 @@
 // Nouvelle architecture : utilisation des API routes Next.js
+export interface ApiError {
+  message: string;
+  type: 'quota' | 'error' | 'warning';
+  quotaInfo?: {
+    usage: number;
+    limit: number;
+    remaining: number;
+    resetTime: string;
+    planType: string;
+  };
+}
+
 export async function removeBackground(file: File): Promise<Blob> {
   const formData = new FormData();
   formData.append("image", file);
@@ -10,7 +22,31 @@ export async function removeBackground(file: File): Promise<Blob> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Erreur API: ${response.status}`);
+
+    // Gérer spécifiquement les erreurs de quota
+    if (response.status === 429) {
+      const quotaError: ApiError = {
+        message: errorData.message || "Quota atteint. Vous avez épuisé votre limite quotidienne.",
+        type: 'quota',
+        quotaInfo: errorData.quotaInfo
+      };
+
+      // Message personnalisé selon le type de plan
+      if (errorData.quotaInfo?.planType === 'anonymous') {
+        quotaError.message = "Limite quotidienne atteinte. Connectez-vous pour obtenir plus d'utilisations ou revenez demain.";
+      } else {
+        quotaError.message = `Quota quotidien épuisé (${errorData.quotaInfo?.usage || 0}/${errorData.quotaInfo?.limit || 0}). Revenez demain à ${new Date(errorData.quotaInfo?.resetTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.`;
+      }
+
+      throw quotaError;
+    }
+
+    // Autres erreurs
+    const apiError: ApiError = {
+      message: errorData.message || `Erreur API: ${response.status}`,
+      type: 'error'
+    };
+    throw apiError;
   }
 
   return response.blob();

@@ -2,6 +2,7 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function DesktopAuth() {
   const { data: session, status } = useSession();
@@ -32,9 +33,11 @@ export default function DesktopAuth() {
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           {session.user?.image ? (
-            <img
+            <Image
               src={session.user.image}
               alt="Avatar"
+              width={32}
+              height={32}
               className="w-8 h-8 rounded-full border border-neutral-600"
             />
           ) : (

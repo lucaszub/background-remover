@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
+import Image from "next/image";
 
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -91,9 +92,11 @@ export default function MobileMenu() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 py-2">
                   {session.user?.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt="Avatar"
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full border border-neutral-600"
                     />
                   ) : (

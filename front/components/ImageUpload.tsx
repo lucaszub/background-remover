@@ -13,11 +13,17 @@ export default function ImageUpload({
   onFileChange,
   onSubmit,
 }: ImageUploadProps) {
-  const { usage, limit, isLoading, isAuthenticated, quotaMessage, refresh } =
+  const { usage, limit, isLoading, isAuthenticated, quotaMessage, refresh, canUpload, remaining } =
     useQuotas();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Vérifier les quotas avant de soumettre
+    if (!canUpload) {
+      return;
+    }
+
     try {
       await onSubmit(e);
       refresh(); // Met à jour le quota après upload
@@ -69,13 +75,40 @@ export default function ImageUpload({
         </label>
         <button
           type="submit"
-          disabled={!selectedFile}
+          disabled={!selectedFile || !canUpload}
           className="flex items-center gap-2 px-5 py-2 mt-2 bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg font-semibold text-base shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-400 animate-fade-in-up disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ animationDelay: "0.35s", animationDuration: "1000ms" }}
         >
           <Sparkles className="w-5 h-5" />
-          Retirer le fond
+          {!canUpload ? "Quota épuisé" : "Retirer le fond"}
         </button>
+
+        {/* Message d'avertissement quand les quotas sont pleins */}
+        {!canUpload && !isLoading && (
+          <div className="w-full max-w-md mt-2 p-3 bg-orange-900/50 border border-orange-700 rounded-lg">
+            <p className="text-orange-200 text-sm font-medium">
+              🚫 Quota quotidien épuisé ({usage}/{limit})
+            </p>
+            <p className="text-orange-300 text-xs mt-1">
+              {isAuthenticated
+                ? "Revenez demain pour plus d'utilisations gratuites"
+                : "Connectez-vous pour obtenir plus d'utilisations ou revenez demain"
+              }
+            </p>
+          </div>
+        )}
+
+        {/* Message d'avertissement quand il reste peu d'utilisations */}
+        {canUpload && remaining <= 2 && remaining > 0 && !isLoading && (
+          <div className="w-full max-w-md mt-2 p-3 bg-yellow-900/50 border border-yellow-700 rounded-lg">
+            <p className="text-yellow-200 text-sm font-medium">
+              ⚠️ Plus que {remaining} utilisation{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''}
+            </p>
+            <p className="text-yellow-300 text-xs mt-1">
+              {!isAuthenticated && "Connectez-vous pour obtenir plus d'utilisations gratuites"}
+            </p>
+          </div>
+        )}
       </form>
     </div>
   );
