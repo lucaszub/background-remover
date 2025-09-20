@@ -20,7 +20,7 @@ async function main() {
       image: 'https://i.pravatar.cc/150?img=1',
       quota: {
         create: {
-          dailyLimit: 10,
+          dailyLimit: 20,
           dailyUsed: 3,
           monthlyLimit: null,
           monthlyUsed: 3,
@@ -78,7 +78,7 @@ async function main() {
 
   console.log('✅ Seed completed!')
   console.log(`Created users:`)
-  console.log(`- ${user1.email} (FREE plan, 3/10 daily usage)`)
+  console.log(`- ${user1.email} (FREE plan, 3/20 daily usage)`)
   console.log(`- ${user2.email} (PREMIUM plan, 25/100 daily usage)`)
   console.log(`Created ${3 + 25} usage records`)
 }

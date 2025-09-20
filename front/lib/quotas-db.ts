@@ -15,7 +15,7 @@ interface QuotaCheckResult {
   message: string
 }
 
-// Quota simple par IP (10 images/jour)
+// Quota simple par IP (5 images/jour)
 export async function checkAnonymousQuota(ip: string): Promise<QuotaCheckResult> {
   const now = new Date()
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -37,7 +37,7 @@ export async function checkAnonymousQuota(ip: string): Promise<QuotaCheckResult>
     }
   })
 
-  const dailyLimit = 10
+  const dailyLimit = 5
   const dailyRemaining = Math.max(0, dailyLimit - dailyUsage)
   const canUse = dailyUsage < dailyLimit
   const percentage = Math.min(100, Math.round((dailyUsage / dailyLimit) * 100))
@@ -80,7 +80,7 @@ export async function checkUserQuota(userId: string): Promise<QuotaCheckResult> 
     userQuota = await prisma.userQuota.create({
       data: {
         userId,
-        dailyLimit: 10,
+        dailyLimit: 20,
         dailyUsed: 0,
         lastReset: startOfDay,
         monthlyLimit: null, // Pas de limite mensuelle pour FREE
