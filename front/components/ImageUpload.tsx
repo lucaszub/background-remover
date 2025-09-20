@@ -56,7 +56,7 @@ export default function ImageUpload({
           className="group relative flex flex-col items-center justify-center w-full max-w-md h-48 border-2 border-dashed border-neutral-800 rounded-xl cursor-pointer transition-colors hover:border-blue-600 hover:bg-neutral-900 outline-none focus-within:border-blue-500"
         >
           <div className="flex flex-col items-center gap-3">
-            <Image className="w-10 h-10 text-blue-400 group-hover:text-blue-500 transition-colors" />
+            <Image className="w-10 h-10 text-blue-400 group-hover:text-blue-500 transition-colors" alt="Upload icon" />
             <span className="text-neutral-100 font-semibold text-lg group-hover:text-blue-400 transition-colors">
               Importez votre image
             </span>
