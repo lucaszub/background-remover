@@ -9,6 +9,7 @@ This is a background removal web application with a modern full-stack architectu
 - **Frontend**: Next.js 15 with TypeScript, Tailwind CSS 4, NextAuth.js authentication
 - **Backend**: Python FastAPI with rembg AI model for background removal
 - **Database**: PostgreSQL with Prisma ORM for user management and quota tracking
+- **Storage**: Azure Blob Storage for persistent image storage with gallery functionality
 - **Analytics**: Google Analytics and Vercel Analytics
 
 ## Development Commands
@@ -58,7 +59,10 @@ The application uses a **proxy pattern** where Next.js API routes act as middlew
 front/app/api/
 ├── auth/[...nextauth]/     # NextAuth.js authentication
 ├── quotas/                 # Quota checking and status
-└── remove-background/      # Main image processing endpoint
+├── remove-background/      # Main image processing endpoint
+└── images/                 # Gallery API endpoints
+    ├── route.ts            # GET: List user images with pagination/filters
+    └── [id]/route.ts       # GET/PATCH/DELETE: Individual image operations
 ```
 
 ### Authentication & Authorization
@@ -89,6 +93,10 @@ Located in `front/lib/api.ts`:
 
 - `removeBackground(file)`: Calls Next.js API route `/api/remove-background`
 - `getQuotas()`: Fetches current user quota status
+- `getImages(filters)`: Fetches user's image gallery with pagination/search
+- `getImage(id)`: Gets individual image with SAS URLs
+- `updateImage(id, data)`: Updates image metadata (title, tags, favorites)
+- `deleteImage(id)`: Deletes image from storage and database
 - Error handling with typed responses for quota exceeded scenarios
 
 ## Key Configuration
@@ -118,10 +126,10 @@ FASTAPI_SECRET_KEY=  # Must match frontend FASTAPI_SECRET_KEY
 
 Key models:
 
-- `User`: OAuth user accounts
+- `User`: OAuth user accounts with gallery relationship
 - `UserQuota`: Daily/monthly limits and usage tracking
 - `QuotaUsage`: Individual processing records with metadata
-- `ProcessedImage`: Azure Blob Storage references
+- `UserImage`: Azure Blob Storage references with metadata (original, processed, thumbnails)
 
 ## Development Workflow
 
@@ -134,8 +142,10 @@ Key models:
    - Validates file type and size
    - Forwards request to FastAPI with API key
 3. **FastAPI backend** processes image and returns result
-4. **Next.js API route** increments usage counters and returns processed image
-5. **Frontend** receives processed image or quota error
+4. **Next.js API route** saves images to Azure Blob Storage (for authenticated users)
+5. **Next.js API route** creates UserImage database record with metadata
+6. **Next.js API route** increments usage counters and returns processed image
+7. **Frontend** receives processed image or quota error
 
 ### Adding New API Endpoints
 
