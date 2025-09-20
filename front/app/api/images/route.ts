@@ -65,15 +65,23 @@ export async function GET(request: NextRequest) {
       prisma.userImage.count({ where: whereClause })
     ])
 
-    // For now, use direct URLs instead of SAS URLs to debug
-    const imagesWithSasUrls = images.map((image) => ({
-      ...image,
-      // Temporarily use direct URLs to see if images load
-      thumbnailUrl: image.thumbnailUrl || image.processedUrl,
-      processedUrl: image.processedUrl,
-      // Don't expose original URL in list view for security
-      originalUrl: undefined
-    }))
+    // Generate SAS URLs for images that will be displayed
+    const imagesWithSasUrls = await Promise.all(
+      images.map(async (image) => {
+        const [thumbnailSasUrl, processedSasUrl] = await Promise.all([
+          azureStorage.generateSasUrl(image.thumbnailUrl || image.processedUrl, 2),
+          azureStorage.generateSasUrl(image.processedUrl, 2)
+        ])
+
+        return {
+          ...image,
+          thumbnailUrl: thumbnailSasUrl,
+          processedUrl: processedSasUrl,
+          // Don't expose original URL in list view for security
+          originalUrl: undefined
+        }
+      })
+    )
 
     const totalPages = Math.ceil(totalCount / limit)
 

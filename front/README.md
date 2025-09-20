@@ -21,7 +21,15 @@ Une application web moderne de suppression d'arrière-plan d'images utilisant l'
 - **Upload drag & drop** avec validation (JPEG, PNG, WebP jusqu'à 10MB)
 - **Prévisualisation avant/après** côte à côte
 - **Intégration FastAPI** pour le traitement ML
+- **Sauvegarde Azure Blob Storage** pour utilisateurs authentifiés
 - **Gestion d'erreurs** complète avec messages utilisateur
+
+### 🖼️ Galerie d'Images
+- **Galerie personnelle** pour utilisateurs connectés avec thumbnails
+- **Recherche et filtres** par titre, tags, favoris
+- **Gestion d'images** : édition titre/tags, marquer favoris, suppression
+- **Modal d'affichage** avec download original/processed
+- **Pagination** pour grandes collections
 
 ### 🎨 Interface Utilisateur
 - **Thème sombre** moderne avec Tailwind CSS 4
@@ -35,6 +43,8 @@ Une application web moderne de suppression d'arrière-plan d'images utilisant l'
 - **Frontend** : Next.js 15 + React 19 + TypeScript
 - **Styling** : Tailwind CSS 4
 - **Auth** : NextAuth.js + Google OAuth
+- **Database** : PostgreSQL + Prisma ORM
+- **Storage** : Azure Blob Storage (images + thumbnails)
 - **Backend ML** : FastAPI (Azure Container Apps)
 - **Déploiement** : Vercel (frontend) + Azure (backend)
 
@@ -44,8 +54,10 @@ Une application web moderne de suppression d'arrière-plan d'images utilisant l'
 ├── /api                    # API Routes
 │   ├── /auth/[...nextauth] # NextAuth configuration
 │   ├── /quotas            # Gestion des quotas
-│   └── /remove-background # Traitement des images
+│   ├── /remove-background # Traitement des images
+│   └── /images            # API galerie (GET/PATCH/DELETE)
 ├── /auth                  # Pages d'authentification
+├── /gallery               # Page galerie utilisateur
 ├── layout.tsx             # Layout principal
 └── page.tsx               # Page d'accueil
 
@@ -56,11 +68,17 @@ Une application web moderne de suppression d'arrière-plan d'images utilisant l'
 ├── Header.tsx            # Navigation
 ├── ImageUpload.tsx       # Upload d'images
 ├── ImagePreview.tsx      # Prévisualisation
-└── QuotaDisplay.tsx      # Affichage des quotas
+├── QuotaDisplay.tsx      # Affichage des quotas
+├── ImageGallery.tsx      # Galerie principale
+├── ImageCard.tsx         # Cartes d'images
+├── GalleryFilters.tsx    # Filtres et recherche
+└── ImageModal.tsx        # Modal d'affichage/édition
 
 /lib
-├── api.ts                # Fonctions API client
-└── quotas.ts             # Logique des quotas
+├── api.ts                # Fonctions API client + galerie
+├── quotas.ts             # Logique des quotas
+├── azure-storage.ts      # Utilitaires Azure Blob Storage
+└── prisma.ts             # Configuration Prisma client
 
 /hooks
 └── useQuotas.ts          # Hook de gestion des quotas
@@ -83,15 +101,25 @@ NEXTAUTH_SECRET=your_secret_here
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
+# Database
+DATABASE_URL=postgresql://...
+
 # FastAPI Backend
 FASTAPI_URL=https://your-fastapi-url
 FASTAPI_SECRET_KEY=your_api_key
+
+# Azure Blob Storage
+AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net
 ```
 
 ### Commandes
 ```bash
 # Installation
 npm install
+
+# Base de données
+npx prisma generate    # Générer le client Prisma
+npx prisma db push     # Mettre à jour le schéma
 
 # Développement
 npm run dev
@@ -105,32 +133,54 @@ npm start
 
 ## 📋 Infrastructure Actuelle vs Future
 
-### 🏃‍♂️ État Actuel
+### 🏃‍♂️ État Actuel - IMPLÉMENTÉ ✅
 ```
 Frontend (Next.js/Vercel)
 ├── Auth : Google OAuth ✅
-├── Quotas : Stockage mémoire ✅
+├── Quotas : Base de données PostgreSQL ✅
 ├── UI : Responsive + dark theme ✅
-└── Pages : Upload + Preview ✅
+├── Pages : Upload + Preview + Gallery ✅
+└── Gallery : Galerie utilisateur complète ✅
 
 Next.js Backend (API Routes)
 ├── /api/auth : NextAuth Google OAuth ✅
 ├── /api/quotas : Gestion des limites ✅
-├── /api/remove-background : Orchestration ✅
+├── /api/remove-background : Orchestration complète ✅
 │   ├── Validation fichiers ✅
 │   ├── Vérification quotas ✅
 │   ├── Appel FastAPI ✅
-│   └── Gestion réponses ✅
+│   ├── Sauvegarde Azure Blob Storage ✅
+│   └── Création records database ✅
+└── /api/images : CRUD galerie ✅
+    ├── GET : Liste avec pagination/filtres ✅
+    ├── GET /[id] : Détails avec SAS URLs ✅
+    ├── PATCH /[id] : Édition métadonnées ✅
+    └── DELETE /[id] : Suppression complète ✅
+
+Database (PostgreSQL + Prisma)
+├── Users : Comptes OAuth ✅
+├── UserQuota : Limites et usage ✅
+├── QuotaUsage : Historique d'utilisation ✅
+└── UserImage : Métadonnées images + Azure URLs ✅
+
+Storage (Azure Blob Storage)
+├── Container : originals (images source) ✅
+├── Container : processed (images traitées) ✅
+├── Container : thumbnails (aperçus WebP) ✅
+└── SAS URLs : Accès sécurisé temporaire ✅
 
 External Services
-├── FastAPI : Endpoint /process-image uniquement ✅
+├── FastAPI : Endpoint /process-image ✅
 │   └── Traitement ML pur (input: image → output: image)
 └── Azure Container Apps : Hébergement FastAPI ✅
 
-Limitations actuelles :
-❌ Quotas perdus au redémarrage serveur
-❌ Pas d'historique des images
-❌ Pas de stockage persistant
+✅ FONCTIONNALITÉS COMPLÈTES :
+✅ Persistance complète (database + storage)
+✅ Galerie utilisateur avec gestion d'images
+✅ Recherche, filtres, pagination
+✅ Upload → Traitement → Sauvegarde → Galerie
+✅ Download original + processed
+✅ Gestion métadonnées (titre, tags, favoris)
 ```
 
 ### 🎯 Infrastructure Future Planifiée
@@ -203,17 +253,22 @@ Azure Blob :
 
 ## 📝 Tâches Restantes
 
-### 🔥 Priorité Haute
-- [ ] **Migration Convex** : Remplacer le stockage mémoire des quotas
-- [ ] **Azure Blob Storage** : Configuration et intégration
-- [ ] **Schema Database** : Tables users, quotas, images
-- [ ] **Upload API** : Endpoint pour sauvegarder les images
+### ✅ TÂCHES TERMINÉES
+- [x] **Azure Blob Storage** : Configuration et intégration complète
+- [x] **Schema Database** : Tables users, quotas, images avec Prisma
+- [x] **Upload API** : Endpoint pour sauvegarder les images
+- [x] **Galerie personnelle** : Affichage des images par utilisateur
+- [x] **Historique** : Liste des traitements avec dates
+- [x] **Pagination** : Pour grandes collections d'images
+- [x] **Recherche et filtres** : Par titre, tags, favoris
+- [x] **Gestion d'images** : Édition, suppression, favoris
+- [x] **Download** : Original et processed individuels
 
-### 🚀 Fonctionnalités Utilisateur  
-- [ ] **Galerie personnelle** : Affichage des images par utilisateur
-- [ ] **Téléchargement** : ZIP multiple ou individuel
-- [ ] **Historique** : Liste des traitements avec dates
-- [ ] **Pagination** : Pour grandes collections d'images
+### 🚀 Améliorations Futures (Optionnelles)
+- [ ] **Téléchargement ZIP** : Multiple sélection
+- [ ] **Partage public** : URLs publiques pour images
+- [ ] **API Rate Limiting** : Protection avancée
+- [ ] **Compression automatique** : Optimisation avant stockage
 
 ### 🛠️ Améliorations Techniques
 - [ ] **Gestion d'erreurs** : Retry logic pour Azure Blob

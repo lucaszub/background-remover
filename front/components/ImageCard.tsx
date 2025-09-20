@@ -33,22 +33,37 @@ export default function ImageCard({ image, onClick }: ImageCardProps) {
       {/* Image Preview */}
       <div className="aspect-square relative bg-neutral-800 overflow-hidden">
         <img
-          src={image.thumbnailUrl || image.processedUrl}
+          src={image.processedUrl}
           alt={image.title || image.originalName}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-          loading="lazy"
+          className="w-full h-full object-cover"
+          loading="eager"
+          style={{
+            display: 'block',
+            opacity: 1,
+            zIndex: 1,
+            position: 'relative'
+          }}
+          onLoad={(e) => {
+            console.log('✅ Image loaded successfully:', image.processedUrl);
+            // Force visibility
+            e.currentTarget.style.visibility = 'visible';
+            e.currentTarget.style.opacity = '1';
+            e.currentTarget.style.display = 'block';
+          }}
+          onError={(e) => {
+            console.error('❌ Image failed to load:', image.processedUrl);
+            console.error('Error event:', e);
+          }}
         />
 
         {/* Overlay with favorite indicator */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200">
-          {image.isFavorite && (
-            <div className="absolute top-2 right-2">
-              <svg className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-          )}
-        </div>
+        {image.isFavorite && (
+          <div className="absolute top-2 right-2 z-10">
+            <svg className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+        )}
 
         {/* Processing time badge */}
         {image.processingTime && (

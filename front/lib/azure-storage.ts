@@ -154,12 +154,9 @@ class AzureStorageService {
 
   async generateSasUrl(blobUrl: string, expiresInHours: number = 1): Promise<string> {
     try {
-      console.log('Generating SAS URL for:', blobUrl);
       const url = new URL(blobUrl);
       const containerName = url.pathname.split('/')[1];
       const blobName = url.pathname.substring(url.pathname.indexOf('/', 1) + 1);
-
-      console.log('Container:', containerName, 'Blob:', blobName);
 
       const containerClient = await this.getContainerClient(containerName);
       const blobClient = containerClient.getBlobClient(blobName);
@@ -169,12 +166,9 @@ class AzureStorageService {
         expiresOn: new Date(Date.now() + expiresInHours * 60 * 60 * 1000),
       };
 
-      const sasUrl = await blobClient.generateSasUrl(sasOptions);
-      console.log('Generated SAS URL:', sasUrl);
-      return sasUrl;
+      return await blobClient.generateSasUrl(sasOptions);
     } catch (error) {
       console.error('Error generating SAS URL:', error);
-      console.log('Fallback to original URL:', blobUrl);
       return blobUrl; // Fallback to original URL
     }
   }
