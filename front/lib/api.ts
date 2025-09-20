@@ -90,3 +90,115 @@ export async function canUserUpload(): Promise<{ canUpload: boolean; quotaInfo: 
     quotaInfo
   };
 }
+
+// Gallery API Types
+export interface UserImage {
+  id: string;
+  userId: string;
+  title: string | null;
+  originalUrl: string;
+  processedUrl: string;
+  thumbnailUrl: string | null;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  dimensions: { width: number; height: number } | null;
+  processingTime: number | null;
+  quality: string | null;
+  tags: string[];
+  isPublic: boolean;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    name: string | null;
+    email: string | null;
+  };
+}
+
+export interface GalleryResponse {
+  images: UserImage[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface GalleryFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  tags?: string[];
+  favorites?: boolean;
+}
+
+// Gallery API Functions
+export async function getImages(filters: GalleryFilters = {}): Promise<GalleryResponse> {
+  const params = new URLSearchParams();
+
+  if (filters.page) params.append('page', filters.page.toString());
+  if (filters.limit) params.append('limit', filters.limit.toString());
+  if (filters.search) params.append('search', filters.search);
+  if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
+  if (filters.favorites) params.append('favorites', 'true');
+
+  const response = await fetch(`/api/images?${params.toString()}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch images: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function getImage(id: string): Promise<UserImage> {
+  const response = await fetch(`/api/images/${id}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Image not found');
+    }
+    throw new Error(`Failed to fetch image: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateImage(
+  id: string,
+  updates: { title?: string; tags?: string[]; isFavorite?: boolean }
+): Promise<UserImage> {
+  const response = await fetch(`/api/images/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to update image: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteImage(id: string): Promise<void> {
+  const response = await fetch(`/api/images/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to delete image: ${response.status}`);
+  }
+}

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
 import { checkUserQuota, incrementUserQuota, checkAnonymousQuota, incrementAnonymousQuota, getClientIP } from '@/lib/quotas-db'
+import { azureStorage } from '@/lib/azure-storage'
+import { prisma } from '@/lib/prisma'
+import { createId } from '@paralleldrive/cuid2'
 
 export async function POST(request: NextRequest) {
   try {
@@ -126,6 +129,50 @@ export async function POST(request: NextRequest) {
     const processedImageBuffer = await response.arrayBuffer()
     const processingTime = Date.now() - startTime
 
+    // Save images to Azure Blob Storage and database for authenticated users
+    let imageMetadata = null
+    if (isAuthenticated && session?.user?.id) {
+      try {
+        const imageId = createId()
+        const originalBuffer = Buffer.from(await file.arrayBuffer())
+        const processedBuffer = Buffer.from(processedImageBuffer)
+
+        // Get file extension
+        const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+
+        // Get image dimensions
+        const dimensions = await azureStorage.getImageDimensions(originalBuffer)
+
+        // Upload images to Azure Blob Storage
+        const [originalUpload, processedUpload, thumbnailUpload] = await Promise.all([
+          azureStorage.uploadOriginalImage(session.user.id, imageId, originalBuffer, file.type, extension),
+          azureStorage.uploadProcessedImage(session.user.id, imageId, processedBuffer),
+          azureStorage.generateThumbnail(session.user.id, imageId, originalBuffer)
+        ])
+
+        // Save to database
+        imageMetadata = await prisma.userImage.create({
+          data: {
+            id: imageId,
+            userId: session.user.id,
+            title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+            originalUrl: originalUpload.url,
+            processedUrl: processedUpload.url,
+            thumbnailUrl: thumbnailUpload.url,
+            originalName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            dimensions: JSON.parse(JSON.stringify(dimensions)),
+            processingTime: processingTime,
+            quality: 'high'
+          }
+        })
+      } catch (error) {
+        console.error('Error saving image to storage:', error)
+        // Continue processing even if storage fails
+      }
+    }
+
     // Incrémenter les quotas après succès avec métadonnées
     if (isAuthenticated && session?.user?.id) {
       await incrementUserQuota(session.user.id, {
@@ -144,17 +191,24 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Prepare response with image metadata if available
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': 'image/png',
+      'Content-Disposition': 'attachment; filename="background-removed.png"',
+      'X-Quota-Usage': String(quotaCheck.dailyUsage + 1),
+      'X-Quota-Limit': String(quotaCheck.dailyLimit),
+      'X-Quota-Remaining': String(quotaCheck.dailyRemaining - 1),
+      'X-Processing-Time': String(processingTime)
+    }
+
+    if (imageMetadata) {
+      responseHeaders['X-Image-Id'] = imageMetadata.id
+    }
+
     // Retourner l'image traitée
     return new NextResponse(processedImageBuffer, {
       status: 200,
-      headers: {
-        'Content-Type': 'image/png',
-        'Content-Disposition': 'attachment; filename="background-removed.png"',
-        'X-Quota-Usage': String(quotaCheck.dailyUsage + 1),
-        'X-Quota-Limit': String(quotaCheck.dailyLimit),
-        'X-Quota-Remaining': String(quotaCheck.dailyRemaining - 1),
-        'X-Processing-Time': String(processingTime)
-      }
+      headers: responseHeaders
     })
     
   } catch (error) {

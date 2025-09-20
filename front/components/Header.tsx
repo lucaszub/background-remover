@@ -25,6 +25,12 @@ export default function Header() {
               style={{ animationDelay: "0.1s", animationDuration: "800ms" }}
             >
               <a
+                href="/gallery"
+                className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
+              >
+                Gallery
+              </a>
+              <a
                 href="#"
                 className="text-neutral-400 hover:text-neutral-200 transition-colors text-sm font-medium"
               >

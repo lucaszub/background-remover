@@ -48,6 +48,7 @@ model User {
   usageHistory  QuotaUsage[]
   sessions      Session[]
   quota         UserQuota?
+  images        UserImage[]
 
   @@map("users")
 }
@@ -93,6 +94,43 @@ model QuotaUsage {
   @@index([userId, usedAt])
   @@index([usedAt])
   @@map("quota_usage")
+}
+
+model UserImage {
+  id              String   @id @default(cuid())
+  userId          String
+  title           String?  @default("Untitled Image")
+
+  // Azure Blob Storage URLs
+  originalUrl     String   // Container: originals/{userId}/{id}_original.{ext}
+  processedUrl    String   // Container: processed/{userId}/{id}_processed.png
+  thumbnailUrl    String?  // Container: thumbnails/{userId}/{id}_thumb.webp
+
+  // File metadata
+  originalName    String
+  fileSize        Int
+  fileType        String
+  dimensions      Json?    // {width: number, height: number}
+
+  // Processing metadata
+  processingTime  Int?     // milliseconds
+  quality         String?  // high, medium, low
+
+  // Organization
+  tags            String[] @default([])
+  isPublic        Boolean  @default(false)
+  isFavorite      Boolean  @default(false)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, isFavorite])
+  @@map("user_images")
 }
 
 enum PlanType {
