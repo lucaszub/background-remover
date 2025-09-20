@@ -39,8 +39,26 @@ export default function DesktopAuth() {
               width={32}
               height={32}
               className="w-8 h-8 rounded-full border border-neutral-600"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
             />
           ) : (
+            <div className="w-8 h-8 rounded-full bg-neutral-600 flex items-center justify-center hidden">
+              <span className="text-neutral-200 text-sm font-medium">
+                {session.user?.name?.charAt(0) || "U"}
+              </span>
+            </div>
+          )}
+          {session.user?.image && (
+            <div className="w-8 h-8 rounded-full bg-neutral-600 flex items-center justify-center hidden">
+              <span className="text-neutral-200 text-sm font-medium">
+                {session.user?.name?.charAt(0) || "U"}
+              </span>
+            </div>
+          )}
+          {!session.user?.image && (
             <div className="w-8 h-8 rounded-full bg-neutral-600 flex items-center justify-center">
               <span className="text-neutral-200 text-sm font-medium">
                 {session.user?.name?.charAt(0) || "U"}
