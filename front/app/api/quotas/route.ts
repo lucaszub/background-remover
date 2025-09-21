@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]/route'
 import { checkUserQuota, getUserStats, checkAnonymousQuota, getClientIP } from '@/lib/quotas-db'
 
