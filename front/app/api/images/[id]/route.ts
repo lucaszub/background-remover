@@ -39,18 +39,30 @@ export async function GET(
     }
 
     // Generate SAS URLs for all image versions
-    const [originalSasUrl, processedSasUrl, thumbnailSasUrl] = await Promise.all([
-      azureStorage.generateSasUrl(image.originalUrl, 2),
-      azureStorage.generateSasUrl(image.processedUrl, 2),
-      image.thumbnailUrl ? azureStorage.generateSasUrl(image.thumbnailUrl, 2) : null
-    ])
+    try {
+      const [originalSasUrl, processedSasUrl, thumbnailSasUrl] = await Promise.all([
+        azureStorage.generateSasUrl(image.originalUrl, 2),
+        azureStorage.generateSasUrl(image.processedUrl, 2),
+        image.thumbnailUrl ? azureStorage.generateSasUrl(image.thumbnailUrl, 2) : null
+      ])
 
-    return NextResponse.json({
-      ...image,
-      originalUrl: originalSasUrl,
-      processedUrl: processedSasUrl,
-      thumbnailUrl: thumbnailSasUrl
-    })
+      return NextResponse.json({
+        ...image,
+        originalUrl: originalSasUrl,
+        processedUrl: processedSasUrl,
+        thumbnailUrl: thumbnailSasUrl
+      })
+    } catch (sasError) {
+      console.error('Error generating SAS URLs for image:', image.id, sasError)
+
+      // Fallback to original URLs if SAS generation fails
+      return NextResponse.json({
+        ...image,
+        originalUrl: image.originalUrl,
+        processedUrl: image.processedUrl,
+        thumbnailUrl: image.thumbnailUrl
+      })
+    }
 
   } catch (error) {
     console.error('Error fetching image:', error)

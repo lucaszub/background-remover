@@ -1,13 +1,21 @@
 import { BlobServiceClient, ContainerClient, BlobGenerateSasUrlOptions, BlobSASPermissions } from '@azure/storage-blob';
 import sharp from 'sharp';
 
-const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+let blobServiceClient: BlobServiceClient | null = null;
 
-if (!connectionString) {
-  throw new Error('Azure Storage connection string not found in environment variables');
+function getBlobServiceClient(): BlobServiceClient {
+  if (!blobServiceClient) {
+    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
+    if (!connectionString) {
+      throw new Error('Azure Storage connection string not found in environment variables');
+    }
+
+    blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+  }
+
+  return blobServiceClient;
 }
-
-const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
 
 // Container names
 const CONTAINERS = {
@@ -36,7 +44,7 @@ export interface ImageMetadata {
 
 class AzureStorageService {
   private async getContainerClient(containerName: string): Promise<ContainerClient> {
-    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const containerClient = getBlobServiceClient().getContainerClient(containerName);
 
     // Ensure container exists
     await containerClient.createIfNotExists();

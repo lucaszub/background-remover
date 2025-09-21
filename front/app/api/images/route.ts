@@ -68,17 +68,29 @@ export async function GET(request: NextRequest) {
     // Generate SAS URLs for images that will be displayed
     const imagesWithSasUrls = await Promise.all(
       images.map(async (image) => {
-        const [thumbnailSasUrl, processedSasUrl] = await Promise.all([
-          azureStorage.generateSasUrl(image.thumbnailUrl || image.processedUrl, 2),
-          azureStorage.generateSasUrl(image.processedUrl, 2)
-        ])
+        try {
+          const [thumbnailSasUrl, processedSasUrl] = await Promise.all([
+            azureStorage.generateSasUrl(image.thumbnailUrl || image.processedUrl, 2),
+            azureStorage.generateSasUrl(image.processedUrl, 2)
+          ])
 
-        return {
-          ...image,
-          thumbnailUrl: thumbnailSasUrl,
-          processedUrl: processedSasUrl,
-          // Don't expose original URL in list view for security
-          originalUrl: undefined
+          return {
+            ...image,
+            thumbnailUrl: thumbnailSasUrl,
+            processedUrl: processedSasUrl,
+            // Don't expose original URL in list view for security
+            originalUrl: undefined
+          }
+        } catch (error) {
+          console.error('Error generating SAS URLs for image:', image.id, error)
+
+          // Fallback to original URLs if SAS generation fails
+          return {
+            ...image,
+            thumbnailUrl: image.thumbnailUrl || image.processedUrl,
+            processedUrl: image.processedUrl,
+            originalUrl: undefined
+          }
         }
       })
     )
