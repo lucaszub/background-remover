@@ -1,10 +1,12 @@
 import { BlobServiceClient, ContainerClient, BlobGenerateSasUrlOptions, BlobSASPermissions } from '@azure/storage-blob';
 
 // Conditionally import Sharp with error handling
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let sharp: any = null;
 let sharpAvailable = false;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   sharp = require('sharp');
   sharpAvailable = true;
   console.log('Sharp module loaded successfully');
@@ -31,7 +33,7 @@ export function testSharpAvailability(): { available: boolean; error?: string } 
     ]);
 
     // Test basic Sharp functionality synchronously
-    const metadata = sharp(testBuffer).metadata();
+    sharp(testBuffer).metadata();
     return { available: true };
   } catch (error) {
     return {

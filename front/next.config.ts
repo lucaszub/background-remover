@@ -17,12 +17,12 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  experimental: {
-    serverComponentsExternalPackages: ['sharp'],
-  },
+  serverExternalPackages: ['sharp'],
   // Webpack configuration for Sharp
   webpack: (config: any) => {
-    config.externals = config.externals || [];
+    if (!config.externals) {
+      config.externals = [];
+    }
     config.externals.push({
       sharp: 'commonjs sharp'
     });
