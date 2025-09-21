@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['sharp'],
   },
+  // Webpack configuration for Sharp
+  webpack: (config: any) => {
+    config.externals = config.externals || [];
+    config.externals.push({
+      sharp: 'commonjs sharp'
+    });
+    return config;
+  },
 };
 
 export default nextConfig;
