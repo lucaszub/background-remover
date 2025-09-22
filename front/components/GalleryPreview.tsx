@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { Search, History, Trash2, Download, Maximize2, X, Images } from 'lucide-react'
+import { useSession, signIn } from 'next-auth/react'
+import { Search, History, Trash2, Download, Maximize2, X, Images, LogIn } from 'lucide-react'
 import { getImages, deleteImage, type UserImage, type ApiError } from '../lib/api'
 
 interface GalleryPreviewProps {
@@ -92,9 +92,42 @@ export default function GalleryPreview({ limit = 8, onError }: GalleryPreviewPro
     a.click()
   }
 
-  // Don't render if user is not authenticated
+  // Show sign-in prompt if user is not authenticated
   if (!session?.user) {
-    return null
+    return (
+      <section
+        id="gallery"
+        className="w-full animate-fade-in-up"
+        style={{animationDelay: '0.7s', animationDuration: '1000ms'}}
+      >
+        <div className="flex items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">Gallery</h2>
+            <p className="text-sm text-neutral-400 mt-1">Your recently processed images.</p>
+          </div>
+        </div>
+
+        {/* Sign-in prompt */}
+        <div className="rounded-xl border border-neutral-800 bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-8 ring-1 ring-inset ring-neutral-900 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="h-12 w-12 rounded-lg bg-blue-500/20 ring-1 ring-blue-500/30 flex items-center justify-center">
+              <Images className="h-6 w-6 text-blue-400" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-semibold mb-4">Access Your Image History</h3>
+          <p className="text-neutral-400 mb-6 max-w-2xl mx-auto">
+            Sign in to save your processed images, access your gallery, and keep track of your editing history.
+          </p>
+          <button
+            onClick={() => signIn("google", { callbackUrl: "/" })}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200"
+          >
+            <LogIn className="h-4 w-4" />
+            Sign in with Google
+          </button>
+        </div>
+      </section>
+    )
   }
 
   return (

@@ -80,10 +80,10 @@ export default function ImagePreview({
             />
           ) : (
             <Image
-              src="/image-sans-fond.png"
+              src="/background-removed.png"
               alt="Image exemple"
               fill
-              className="object-cover transition-all duration-500 blur-sm opacity-80"
+              className="object-cover transition-all duration-500"
               style={{background: 'repeating-conic-gradient(#2c2c33 0% 25%, transparent 0% 50%) 50% / 20px 20px'}}
             />
           )}
