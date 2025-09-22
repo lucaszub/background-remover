@@ -192,6 +192,20 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 The API will be available at `http://localhost:8000`
 
+## 📁 Additional Documentation
+
+### Database Setup
+Detailed PostgreSQL setup and configuration instructions are available in:
+- [docs/postgresql/setup.md](docs/postgresql/setup.md) - Complete installation guide
+- [docs/postgresql/commands.md](docs/postgresql/commands.md) - Useful commands and operations
+- [docs/postgresql/troubleshooting.md](docs/postgresql/troubleshooting.md) - Common issues and solutions
+
+### Deployment Scripts
+Production deployment scripts are located in the `back/` directory:
+- `deploy-prod.sh` - Complete VPS deployment
+- `redeploy-backend.sh` - Backend-only updates
+- `update-vps.sh` - Quick code synchronization
+
 ## 📚 API Documentation
 
 ### Authentication Flow
@@ -304,29 +318,114 @@ Internal ML processing endpoint (not directly accessible from frontend).
 
 ## 🚀 Deployment
 
-### Production Environment Variables
+### Production Architecture
 
-Ensure all environment variables are properly configured:
+The application is currently deployed using the following architecture:
+
+- **Frontend**: Next.js application deployed on Vercel
+- **Backend**: FastAPI service on Hostinger VPS (KVM1)
+- **Database**: PostgreSQL on the same VPS using Docker
+- **Storage**: Azure Blob Storage for image persistence
+
+**VPS Details**:
+- Provider: Hostinger
+- Type: KVM1 VPS
+- IP: 69.62.105.107
+- Location: /root/bg-remover-api
+
+### VPS Deployment Setup
+
+#### Quick Deployment Commands
+
+```bash
+# Deploy complete stack (PostgreSQL + FastAPI)
+cd back
+./deploy-prod.sh
+
+# Redeploy backend only (faster updates)
+./redeploy-backend.sh
+
+# Update backend code only
+./update-vps.sh
+```
+
+#### Manual VPS Setup
+
+1. **Server Preparation**:
+```bash
+# Install Docker on VPS
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Install Docker Compose
+curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+```
+
+2. **Database Setup**:
+The VPS uses PostgreSQL via Docker with the following configuration:
+- Container: bg-remover-postgres
+- Database: background_remover_prod
+- User: bg_user_prod
+- Port: 5432
+
+For detailed PostgreSQL setup instructions, see [docs/postgresql/](docs/postgresql/).
+
+3. **Production Environment**:
+Copy `.env.prod.example` to `.env.prod` in the `back/` directory:
+```bash
+# Production Environment Variables for VPS
+POSTGRES_PASSWORD=your_super_secure_password_here_2024
+DATABASE_URL="postgresql://bg_user_prod:your_super_secure_password_here_2024@YOUR_VPS_IP:5432/background_remover_prod"
+SECRET_KEY=bg-remover-secret-2024
+```
+
+### Environment Variables
 
 **Frontend (.env.local)**:
 ```bash
 NEXTAUTH_URL=https://yourdomain.com
-DATABASE_URL=postgresql://...
+DATABASE_URL=postgresql://bg_user_prod:password@69.62.105.107:5432/background_remover_prod
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
-FASTAPI_URL=https://api.yourdomain.com
-FASTAPI_SECRET_KEY=...
+FASTAPI_URL=http://69.62.105.107:8001
+FASTAPI_SECRET_KEY=bg-remover-secret-2024
 AZURE_STORAGE_CONNECTION_STRING=...
 ```
 
-**Backend (.env)**:
+**Backend (.env.prod)**:
 ```bash
-FASTAPI_SECRET_KEY=... # Must match frontend
+FASTAPI_SECRET_KEY=bg-remover-secret-2024  # Must match frontend
+POSTGRES_PASSWORD=your_super_secure_password_here_2024
 ```
 
-### Azure Container Apps
+### Deployment Monitoring
 
-Deploy both frontend and backend to Azure Container Apps:
+**Health Checks**:
+```bash
+# API Health
+curl http://69.62.105.107:8001/
+
+# API Documentation
+curl http://69.62.105.107:8001/docs
+
+# Database Health
+ssh root@69.62.105.107 'docker compose -f /root/bg-remover-api/docker-compose.prod.yml exec postgres pg_isready -U bg_user_prod'
+```
+
+**Log Monitoring**:
+```bash
+# FastAPI Logs
+ssh root@69.62.105.107 'cd /root/bg-remover-api && docker compose -f docker-compose.prod.yml logs -f fastapi'
+
+# PostgreSQL Logs
+ssh root@69.62.105.107 'cd /root/bg-remover-api && docker compose -f docker-compose.prod.yml logs -f postgres'
+```
+
+### Alternative Deployment: Azure Container Apps
+
+For enterprise deployment, the application can also be deployed to Azure Container Apps:
 
 1. **Build and push Docker images**
 2. **Configure environment variables**

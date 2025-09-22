@@ -175,3 +175,97 @@ Key models:
 - **API Routes**: Test Next.js API routes with authentication states
 - **Integration**: Test complete flow: auth → quota check → processing → increment
 - **Quota Logic**: Test daily resets and different user types
+
+## Production Deployment (VPS)
+
+### Current Production Setup
+
+The application is deployed on a Hostinger VPS with the following configuration:
+
+- **Provider**: Hostinger VPS (KVM1)
+- **IP**: 69.62.105.107
+- **Backend Location**: /root/bg-remover-api
+- **Database**: PostgreSQL via Docker (container: bg-remover-postgres)
+- **Frontend**: Deployed on Vercel
+- **Storage**: Azure Blob Storage
+
+### Deployment Scripts
+
+Located in `back/` directory:
+
+- `deploy-prod.sh`: Complete deployment (PostgreSQL + FastAPI)
+- `redeploy-backend.sh`: Fast backend-only redeployment
+- `update-vps.sh`: Quick code updates
+- `Dockerfile`: Production container configuration
+- `.env.prod.example`: Production environment template
+
+### VPS Deployment Commands
+
+```bash
+# Full deployment
+cd back
+./deploy-prod.sh
+
+# Backend updates only
+./redeploy-backend.sh
+
+# Quick code sync
+./update-vps.sh
+```
+
+### Production Environment
+
+**VPS Configuration (.env.prod)**:
+```bash
+FASTAPI_SECRET_KEY=bg-remover-secret-2024
+POSTGRES_PASSWORD=your_super_secure_password_here_2024
+DATABASE_URL="postgresql://bg_user_prod:password@IP:5432/background_remover_prod"
+```
+
+**Frontend Configuration (.env.local)**:
+```bash
+FASTAPI_URL=http://69.62.105.107:8001
+DATABASE_URL=postgresql://bg_user_prod:password@69.62.105.107:5432/background_remover_prod
+```
+
+### Database Production Setup
+
+Detailed PostgreSQL setup documentation is available in `docs/postgresql/`:
+
+- `setup.md`: Complete installation and configuration
+- `commands.md`: Useful PostgreSQL and Docker commands
+- `troubleshooting.md`: Common issues and solutions
+
+**Key Production Database Details**:
+- Database: background_remover_prod
+- User: bg_user_prod
+- Container: bg-remover-postgres
+- Port: 5432
+
+### Monitoring and Maintenance
+
+**Health Checks**:
+```bash
+# API Status
+curl http://69.62.105.107:8001/
+
+# Database Status
+ssh root@69.62.105.107 'docker compose -f /root/bg-remover-api/docker-compose.prod.yml exec postgres pg_isready -U bg_user_prod'
+```
+
+**Log Monitoring**:
+```bash
+# Real-time FastAPI logs
+ssh root@69.62.105.107 'cd /root/bg-remover-api && docker compose -f docker-compose.prod.yml logs -f fastapi'
+
+# PostgreSQL logs
+ssh root@69.62.105.107 'cd /root/bg-remover-api && docker compose -f docker-compose.prod.yml logs -f postgres'
+```
+
+### Deployment Workflow
+
+1. **Local Development**: Test changes locally with `npm run dev` and local FastAPI
+2. **Code Sync**: Use `./update-vps.sh` for quick code updates
+3. **Full Redeploy**: Use `./redeploy-backend.sh` for container rebuilds
+4. **Database Changes**: Apply via Prisma migrations from frontend
+5. **Monitor**: Check logs and health endpoints post-deployment

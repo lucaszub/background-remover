@@ -43,6 +43,9 @@ back/update.sh
 back/.env
 back/update-vps.sh
 
+.claud/
+.vscode/
+CLAUD.md
 # Keep these files (comment to track)
 # docker-compose.db.yml
 # Dockerfile.postgres
