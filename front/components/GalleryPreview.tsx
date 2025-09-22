@@ -107,15 +107,16 @@ export default function GalleryPreview({ limit = 8, onError }: GalleryPreviewPro
       >
         <div className="flex items-end justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">Gallery</h2>
+      <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">Gallery</h2>
             <p className="text-sm text-neutral-400 mt-1">Your recently processed images.</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-400">
               <History className="h-4 w-4" />
               <span>{images.length} {images.length === 1 ? 'image' : 'images'}</span>
+                <span>{images.length} {images.length === 1 ? 'image' : 'images'}</span>
             </div>
-            <button
+              <button
               onClick={() => setSearchTerm('')}
               className="inline-flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-xs font-medium text-neutral-200 hover:bg-neutral-800/60 transition-colors"
             >
@@ -222,10 +223,10 @@ export default function GalleryPreview({ limit = 8, onError }: GalleryPreviewPro
             <div className="mx-auto h-12 w-12 rounded-lg bg-neutral-900 ring-1 ring-neutral-800 flex items-center justify-center">
               <Images className="h-6 w-6 text-neutral-300" />
             </div>
-            <p className="mt-4 text-base font-medium tracking-tight">
+              <p className="mt-4 text-base font-medium tracking-tight">
               {searchTerm ? 'No images found' : 'No images in your gallery'}
             </p>
-            <p className="mt-1 text-sm text-neutral-400">
+              <p className="mt-1 text-sm text-neutral-400">
               {searchTerm ? 'Try a different search term.' : 'Process an image above to get started.'}
             </p>
           </div>

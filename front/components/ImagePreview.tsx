@@ -32,13 +32,13 @@ export default function ImagePreview({
               alt="Image originale"
               fill
               className={`object-cover transition-all duration-500 ${
-                isLoading ? 'opacity-60' : ''
+                  isLoading ? 'opacity-60' : ''
               }`}
             />
           ) : (
             <Image
               src="/car-2.jpg"
-              alt="Image exemple"
+                alt="Example image"
               fill
               className={`object-cover transition-all duration-500 ${
                 isLoading ? 'opacity-60 blur-sm' : 'blur-0'
@@ -53,7 +53,7 @@ export default function ImagePreview({
                 Traitement en cours...
               </div>
               <div className="text-neutral-400 text-xs text-center px-4">
-                ↓ Regardez l&apos;image du bas ↓
+          ↓ Look at the image below ↓
               </div>
             </div>
           )}
@@ -93,10 +93,10 @@ export default function ImagePreview({
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-950/85 backdrop-blur-sm z-10">
               <Loader2 className="w-10 h-10 text-blue-400 animate-spin mb-3" />
               <div className="text-blue-300 text-sm font-medium mb-1">
-                IA en action...
+          AI in action...
               </div>
               <div className="text-blue-400 text-xs text-center px-4">
-                Suppression du fond
+          Background removal
               </div>
             </div>
           )}
@@ -104,7 +104,7 @@ export default function ImagePreview({
         <span className={`text-xs mt-2 transition-colors duration-300 ${
           isLoading ? 'text-blue-400 font-medium' : 'text-neutral-400'
         }`}>
-          {isLoading ? 'Traitement en cours...' : 'Fond retiré (IA)'}
+        {isLoading ? 'Processing...' : 'Background removed (AI)'}
         </span>
         <button
           onClick={onDownload}
@@ -112,7 +112,7 @@ export default function ImagePreview({
           className="flex items-center gap-2 px-4 py-2 bg-neutral-900 border border-neutral-800 hover:bg-blue-700 hover:border-blue-700 transition-colors rounded-lg font-semibold text-base shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-400 mt-2 disabled:opacity-40 disabled:pointer-events-none"
         >
           <Download className="w-5 h-5" />
-          Télécharger
+        Télécharger
         </button>
       </div>
     </section>

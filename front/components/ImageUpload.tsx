@@ -58,10 +58,10 @@ export default function ImageUpload({
           <div className="flex flex-col items-center gap-3">
             <Image className="w-10 h-10 text-blue-400 group-hover:text-blue-500 transition-colors" />
             <span className="text-neutral-100 font-semibold text-lg group-hover:text-blue-400 transition-colors">
-              Importez votre image
+                Upload your image
             </span>
             <span className="text-neutral-400 text-xs">
-              JPEG, PNG, jusqu&apos;à 10 Mo
+                JPEG, PNG, up to 10MB
             </span>
           </div>
           <input
@@ -80,14 +80,14 @@ export default function ImageUpload({
           style={{ animationDelay: "0.35s", animationDuration: "1000ms" }}
         >
           <Sparkles className="w-5 h-5" />
-          {!canUpload ? "Quota épuisé" : "Retirer le fond"}
+            {!canUpload ? "Quota exceeded" : "Remove the background"}
         </button>
 
         {/* Message d'avertissement quand les quotas sont pleins */}
         {!canUpload && !isLoading && (
           <div className="w-full max-w-md mt-2 p-3 bg-orange-900/50 border border-orange-700 rounded-lg">
             <p className="text-orange-200 text-sm font-medium">
-              🚫 Quota quotidien épuisé ({usage}/{limit})
+            Remove the background
             </p>
             <p className="text-orange-300 text-xs mt-1">
               {isAuthenticated

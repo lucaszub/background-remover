@@ -34,11 +34,11 @@ export const QuotaDisplay: React.FC<QuotaDisplayProps> = ({
       <div className="mt-2">
         {!isAuthenticated ? (
           <p className="text-xs text-neutral-400">
-            Connectez-vous pour 20 images gratuites par jour
+            Sign in for 20 free images per day
           </p>
         ) : (
           <p className="text-xs text-neutral-400">
-            Contactez-moi pour plus de fonctionnalités
+            Contact me for more features
           </p>
         )}
       </div>

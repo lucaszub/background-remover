@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Background Remover",
-  description: "Retirez le fond d'une image en 1 clic avec notre IA",
+  description: "Remove image backgrounds in 1 click with our AI",
 };
 
 export default function RootLayout({

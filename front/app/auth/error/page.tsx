@@ -11,13 +11,13 @@ function ErrorContent() {
   const getErrorMessage = (error: string | null) => {
     switch (error) {
       case "Configuration":
-        return "Il y a un problème avec la configuration du serveur.";
+        return "There is a problem with the server configuration.";
       case "AccessDenied":
-        return "Accès refusé. Vous avez annulé la connexion.";
+        return "Access denied. You canceled the connection.";
       case "Verification":
-        return "Le token a expiré ou a déjà été utilisé.";
+        return "The token has expired or has already been used.";
       default:
-        return "Une erreur inattendue s'est produite lors de la connexion.";
+        return "An unexpected error occurred during connection.";
     }
   };
 
@@ -48,7 +48,7 @@ function ErrorContent() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">Erreur de connexion</h1>
+          <h1 className="text-2xl font-bold text-white">Connection Error</h1>
           <p className="text-neutral-400">{getErrorMessage(error)}</p>
         </div>
         <div className="space-y-4 pt-4">
@@ -56,13 +56,13 @@ function ErrorContent() {
             href="/auth/signin"
             className="inline-flex items-center justify-center w-full px-6 py-3 bg-white text-neutral-900 font-medium rounded-lg hover:bg-neutral-200 transition-colors"
           >
-            Réessayer
+            Try Again
           </Link>
           <Link
             href="/"
             className="inline-flex items-center justify-center w-full px-6 py-3 border border-neutral-700 text-neutral-300 font-medium rounded-lg hover:border-neutral-600 hover:bg-neutral-900 transition-all"
           >
-            Retour à l&apos;accueil
+            Back to Home
           </Link>
         </div>
       </div>
@@ -72,7 +72,7 @@ function ErrorContent() {
 
 export default function AuthError() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <ErrorContent />
     </Suspense>
   );

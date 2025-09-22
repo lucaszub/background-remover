@@ -42,9 +42,9 @@ export default function SignIn() {
               Background Remover
             </span>
           </div>
-          <h2 className="text-3xl font-bold text-center mb-2">Se connecter</h2>
+          <h2 className="text-3xl font-bold text-center mb-2">Sign In</h2>
           <p className="text-neutral-400 text-center">
-            Connectez-vous pour accéder à toutes les fonctionnalités
+            Sign in to access all features
           </p>
         </div>
 
@@ -77,7 +77,7 @@ export default function SignIn() {
                   </svg>
                 )}
                 <span className="text-neutral-200 cursor-pointer font-medium">
-                  Continuer avec {provider.name}
+                  Continue with {provider.name}
                 </span>
               </button>
             ))}
@@ -85,13 +85,13 @@ export default function SignIn() {
 
         <div className="text-center pt-4">
           <p className="text-sm text-neutral-500">
-            En vous connectant, vous acceptez nos{" "}
+            By signing in, you accept our{" "}
             <a href="#" className="text-neutral-300 hover:text-white underline">
-              conditions d&apos;utilisation
+              terms of service
             </a>{" "}
-            et notre{" "}
+            and our{" "}
             <a href="#" className="text-neutral-300 hover:text-white underline">
-              politique de confidentialité
+              privacy policy
             </a>
             .
           </p>

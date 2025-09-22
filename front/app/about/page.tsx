@@ -16,7 +16,8 @@ import {
   FileText,
   Users,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Mail
 } from 'lucide-react'
 
 export default function AboutPage() {
@@ -416,14 +417,16 @@ export default function AboutPage() {
             </div>
 
             <div className="mt-6 pt-6 border-t border-neutral-800">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h4 className="font-medium text-neutral-200">Interested in the technical details?</h4>
                   <p className="text-sm text-neutral-400">View the complete source code and documentation</p>
                 </div>
                 <div className="flex gap-3">
                   <a
-                    href="#"
+                    href="https://github.com/lucaszub/background-remover"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm"
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -438,6 +441,41 @@ export default function AboutPage() {
                   </Link>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact CTA */}
+        <section
+          className="w-full animate-fade-in-up"
+          style={{animationDelay: '0.7s', animationDuration: '1000ms'}}
+        >
+          <div className="rounded-xl border border-neutral-800 bg-gradient-to-r from-teal-500/10 to-blue-500/10 p-8 ring-1 ring-inset ring-neutral-900 text-center">
+            <div className="flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-lg bg-teal-500/20 ring-1 ring-teal-500/30 flex items-center justify-center">
+                <Mail className="h-6 w-6 text-teal-400" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-semibold mb-4">Let&apos;s Connect!</h3>
+            <p className="text-neutral-400 mb-6 max-w-2xl mx-auto">
+              Interested in collaborating on a project? Have questions about this implementation?
+              I&apos;d love to discuss development opportunities and technical challenges.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200"
+              >
+                <Mail className="h-4 w-4" />
+                Get In Touch
+              </Link>
+              <a
+                href="mailto:zubiarrainlucas@gmail.com"
+                className="inline-flex items-center gap-2 border border-neutral-700 hover:border-neutral-600 text-neutral-300 hover:text-neutral-200 font-medium py-3 px-6 rounded-lg transition-all duration-200"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Direct Email
+              </a>
             </div>
           </div>
         </section>

@@ -126,7 +126,7 @@ export default function MobileMenu() {
                   onClick={handleSignOut}
                   className="w-full text-left text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
                 >
-                  Déconnexion
+                  Sign Out
                 </button>
               </div>
             ) : (

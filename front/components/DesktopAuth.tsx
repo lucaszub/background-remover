@@ -86,7 +86,7 @@ export default function DesktopAuth() {
                 onClick={handleSignOut}
                 className="w-full text-left px-4 py-2 text-neutral-300 hover:bg-neutral-700 text-sm"
               >
-                Déconnexion
+                Sign Out
               </button>
             </div>
           </>
