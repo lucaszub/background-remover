@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['sharp'],
   // Webpack configuration for Sharp
-  webpack: (config: any) => {
+  webpack: (config: { externals?: unknown[] }) => {
     if (!config.externals) {
       config.externals = [];
     }

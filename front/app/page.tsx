@@ -7,6 +7,7 @@ import ImageUpload from '../components/ImageUpload'
 import ImagePreview from '../components/ImagePreview'
 import Footer from '../components/Footer'
 import ErrorNotification from '../components/ErrorNotification'
+import GalleryPreview from '../components/GalleryPreview'
 import { removeBackground, ApiError } from '../lib/api'
 
 export default function Home() {
@@ -119,6 +120,18 @@ export default function Home() {
           isLoading={isLoading}
           isProcessed={isProcessed}
           onDownload={handleDownload}
+        />
+
+        {/* Divider */}
+        <div
+          className="w-full h-px bg-neutral-800 my-10 animate-fade-in-up"
+          style={{animationDelay: '0.65s', animationDuration: '1000ms'}}
+        ></div>
+
+        {/* Gallery Preview */}
+        <GalleryPreview
+          limit={8}
+          onError={setError}
         />
       </main>
 

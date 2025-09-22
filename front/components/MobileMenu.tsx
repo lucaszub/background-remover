@@ -63,21 +63,28 @@ export default function MobileMenu() {
       >
         <nav className="flex flex-col pt-20 px-6 space-y-6">
           <a
-            href="#"
+            href="#gallery"
+            className="text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
+            onClick={toggleMenu}
+          >
+            Gallery
+          </a>
+          <a
+            href="/about"
+            className="text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
+            onClick={toggleMenu}
+          >
+            About
+          </a>
+          <a
+            href="/docs"
             className="text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
             onClick={toggleMenu}
           >
             Docs
           </a>
           <a
-            href="#"
-            className="text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
-            onClick={toggleMenu}
-          >
-            API
-          </a>
-          <a
-            href="#"
+            href="/contact"
             className="text-neutral-400 hover:text-neutral-200 transition-colors text-base font-medium py-2"
             onClick={toggleMenu}
           >
